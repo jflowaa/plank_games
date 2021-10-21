@@ -1,0 +1,43 @@
+<div class="container" style="padding-top: 50px">
+  <div class="row">
+    <div class="column">
+      <table class="tic-tac-toe-board">
+        <tr>
+          <%= for index <- 0..2 do %>
+          <%= render_square(%{position: index, board: @board}) %>
+          <% end %>
+        </tr>
+        <tr>
+          <%= for index <- 0..2 do %>
+          <%= render_square(%{position: index + 3, board: @board}) %>
+          <% end %>
+        </tr>
+        <tr>
+          <%= for index <- 0..2 do %>
+          <%= render_square(%{position: index + 6, board: @board}) %>
+          <% end %>
+        </tr>
+      </table>
+    </div>
+    <div class="column">
+      <p>Players in lobby: <%= @client_count %></p>
+      <%= if not @has_started do %>
+        <button phx-click="join">Join as Player</button>
+      <% end %>
+      <%= if @has_finished do %>
+        <button phx-click="new">New Game</button>
+      <% end %>
+      <%= if @player_token do %>
+        <h4>Your Token: <%= @player_token %></h4>
+      <% end %>
+      <%= if @has_started do %>
+        <h4>Current Turn: <%= @current_token %></h4>
+      <% end %>
+      <div class="message-box">
+        <%= for message <- @messages do %>
+          <span><%= message %></span><br/>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

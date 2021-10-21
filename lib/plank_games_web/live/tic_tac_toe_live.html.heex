@@ -1,0 +1,19 @@
+<div class="row">
+  <div class="column">
+    <%= if @lobbies do %>
+    <h1>Active Lobbies</h1>
+      <%= for lobby <- @lobbies do %>
+      <p>
+        Lobby Name: <%= Kernel.elem(lobby, 0) %>
+        <br/>
+        Number of Clients: <%= Kernel.elem(lobby, 1) %>
+        <br/>
+        <a href={"/tictactoe/#{Kernel.elem(lobby, 0)}"} class="right"><button>Join Lobby</button></a>
+      </p>
+      <% end %>
+    <% end %>
+  </div>
+  <div class="row">
+   <a href={"/tictactoe/#{@uuid}"}><button>New Lobby</button></a>
+  </div>
+</div>

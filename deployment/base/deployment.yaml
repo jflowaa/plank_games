@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plank-games-deployment
+  labels:
+    selector: server-selector
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      selector: server-selector
+      version: stable
+  template:
+    metadata:
+      labels:
+        selector: server-selector
+        version: stable
+    spec:
+      containers:
+        - name: plank-games
+          image: jackflowers1/plank-games:v5
+          env:
+            - name: REDIS_HOST
+              value: plank-games-redis-svc
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretRefName:
+                  name: plank-games-sec
+                  key: keys
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          ports:
+            - name: http
+              containerPort: 4000
+            - name: epmd
+              containerPort: 4369
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: plank-games-pdb
+spec:
+  maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: plank-games
+      version: stable

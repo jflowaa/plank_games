@@ -1,0 +1,9 @@
+**/_build
+**/.elixir_ls
+**/deps
+**/prive/staticredis-config
+**/test
+**.dump
+**/.git
+**.gitignore
+README.md
