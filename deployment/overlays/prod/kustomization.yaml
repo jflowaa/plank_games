@@ -11,4 +11,4 @@ patchesJson6902:
       name: plank-games-ingress
     path: ingress-patches.yaml
 patchesStrategicMerge:
-  - "../../infrastructure/secret.yaml"
+  - secret.yaml

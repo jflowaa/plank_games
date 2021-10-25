@@ -23,29 +23,17 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser
 
 > This process can be simplified
 
-You'll need to have Minikube and Docker/Podman installed and running. You'll also need the `ingress` addon.
+You'll need to have Minikube and Docker/Podman installed. Once installed you can start Minikube and set it up with:
 
 ```bash
 minikube start
 minikube addons enable ingress
 ```
 
-You'll also want to update your host file to allow for domain resolving to Minikube's IP:
+To allow for domain resolving to Minikube's IP:
 
 ```bash
 echo "$(minikube ip)  plank.games" >> /etc/hosts
 ```
 
-To start:
-
-- While volume mount image isn't setup:
-  - Build image of server: `docker build . -f deployment/Dockerfile -t plank-games:v1`
-  - Add image to Minikube: `minikube image load plank-games:v1`
-  - Update [deployment/base/deployment.yaml](deployment/base/deployment.yaml) with tag used
-  - Then apply manifests to cluster: `kubectl apply -k deployment/base/`
-- When volume mount image is setup:
-  - todo
-
-Now you can vist [plank-games.test](http://plank-games.test) from your browser.
-
-> Configure a way to run under volume mount
+TODO: instructions for ksync

@@ -24,9 +24,9 @@ spec:
               value: plank-games-redis-svc
             - name: SECRET_KEY_BASE
               valueFrom:
-                secretRefName:
+                secretKeyRef:
                   name: plank-games-sec
-                  key: keys
+                  key: secretKey
             - name: POD_IP
               valueFrom:
                 fieldRef:

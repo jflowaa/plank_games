@@ -6,4 +6,5 @@
 **.dump
 **/.git
 **.gitignore
+**/deployment
 README.md
