@@ -13,27 +13,25 @@ defmodule TicTacToe.Activity do
       {:ok, pid} ->
         {:ok, pid}
 
-      {:error, {:already_started, pid}} ->
-        Logger.info("already started at #{inspect(pid)}, returning :ignore")
+      {:error, {:already_started, _}} ->
         :ignore
     end
   end
 
   def init(_), do: {:ok, get_lobbies()}
 
-  def handle_call(:get, _from, state), do: {:reply, state, state}
+  def handle_call(:get, _from, state), do: {:reply, state, get_lobbies()}
 
   def handle_call(:refresh, _from, state), do: {:reply, state, get_lobbies()}
 
-  def handle_call({:refresh, lobby_id}, _from, state) do
-    lobby_state = TicTacToe.Server.lookup(lobby_id)
-
-    if Map.has_key?(state, lobby_id) do
-      {:reply, state, Map.put(state, lobby_id, Enum.count(Map.keys(lobby_state.clients)))}
-    else
-      {:reply, state, Map.put(state, lobby_id, Enum.count(Map.keys(lobby_state.clients)))}
-    end
-  end
+  def handle_call({:refresh, lobby_id}, _from, state),
+    do:
+      {:reply, state,
+       Map.put(
+         state,
+         lobby_id,
+         TicTacToe.Presence.list("TicTacToe.Lobby_#{lobby_id}") |> map_size
+       )}
 
   defp via_tuple(),
     do: {:via, Horde.Registry, {TicTacToe.Registry, __MODULE__}}
@@ -43,7 +41,12 @@ defmodule TicTacToe.Activity do
 
     Enum.reduce(children, %{}, fn child, state ->
       lobby_state = :sys.get_state(elem(child, 1))
-      Map.put(state, lobby_state.id, Enum.count(Map.keys(lobby_state.clients)))
+
+      Map.put(
+        state,
+        lobby_state.id,
+        TicTacToe.Presence.list("#{inspect(TicTacToe.Lobby)}_#{lobby_state.id}") |> map_size
+      )
     end)
   end
 end

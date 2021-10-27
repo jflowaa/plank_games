@@ -1,7 +1,7 @@
 **/_build
 **/.elixir_ls
 **/deps
-**/prive/staticredis-config
+**/priv/static/
 **/test
 **.dump
 **/.git

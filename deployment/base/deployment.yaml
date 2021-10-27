@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: plank-games
-          image: jackflowers1/plank-games:v5
+          image: jackflowers1/plank-games:v16
           env:
             - name: REDIS_HOST
               value: plank-games-redis-svc
@@ -27,6 +27,11 @@ spec:
                 secretKeyRef:
                   name: plank-games-sec
                   key: secretKey
+            - name: RELEASE_COOKIE
+              valueFrom:
+                secretKeyRef:
+                  name: plank-games-sec
+                  key: releaseCookie
             - name: POD_IP
               valueFrom:
                 fieldRef:
@@ -45,5 +50,5 @@ spec:
   maxUnavailable: 25%
   selector:
     matchLabels:
-      app: plank-games
+      selector: server-selector
       version: stable

@@ -1,4 +1,4 @@
-defmodule TicTacToe.Server do
+defmodule TicTacToe.Lobby do
   use GenServer
   require Logger
 
@@ -31,8 +31,7 @@ defmodule TicTacToe.Server do
       {:ok, pid} ->
         {:ok, pid}
 
-      {:error, {:already_started, pid}} ->
-        Logger.info("already started at #{inspect(pid)}, returning :ignore")
+      {:error, {:already_started, _}} ->
         :ignore
     end
   end
@@ -45,7 +44,7 @@ defmodule TicTacToe.Server do
         {:ok, :erlang.binary_to_term(x)}
 
       _ ->
-        {:ok, %TicTacToe.GameState{:id => Keyword.get(args, :lobby_id)}}
+        {:ok, %TicTacToe.LobbyState{:id => Keyword.get(args, :lobby_id)}}
     end
   end
 
@@ -64,14 +63,13 @@ defmodule TicTacToe.Server do
   def handle_call(:new, _from, state) do
     if state.has_finished do
       {:reply, :ok,
-       %TicTacToe.GameState{
+       %TicTacToe.LobbyState{
          :id => state.id,
          :player_one => state.player_one,
          :player_two => state.player_two,
          :current_player => state.player_one,
          :current_token => "x",
-         :has_started => true,
-         :clients => state.clients
+         :has_started => true
        }}
     else
       {:reply, :not_finished, state}
@@ -92,7 +90,7 @@ defmodule TicTacToe.Server do
           {:reply, :already_joined, state}
         else
           {:reply, :ok,
-           %TicTacToe.GameState{
+           %TicTacToe.LobbyState{
              state
              | :player_two => player_id,
                :current_player => state.player_one,
@@ -130,37 +128,26 @@ defmodule TicTacToe.Server do
     case client_id do
       x when x == state.player_one ->
         {:reply, :player_left,
-         %TicTacToe.GameState{
+         %TicTacToe.LobbyState{
            :id => state.id,
            :player_two => state.player_two,
            :current_token => "x",
-           :has_started => false,
-           :clients => state.clients
+           :has_started => false
          }}
 
       x when x == state.player_two ->
         {:reply, :player_left,
-         %TicTacToe.GameState{
+         %TicTacToe.LobbyState{
            :id => state.id,
            :player_one => state.player_one,
            :current_token => "x",
-           :has_started => false,
-           :clients => state.clients
+           :has_started => false
          }}
 
       _ ->
-        {:reply, :ok,
-         %TicTacToe.GameState{state | :clients => Map.delete(Map.get(state, :clients), client_id)}}
+        {:reply, :ok, state}
     end
   end
-
-  def handle_call({:add_client, client_id}, _from, state),
-    do:
-      {:reply, state,
-       %TicTacToe.GameState{
-         state
-         | :clients => Map.put_new(Map.get(state, :clients), client_id, true)
-       }}
 
   defp via_tuple(lobby_id),
     do: {:via, Horde.Registry, {TicTacToe.Registry, "lobby_#{lobby_id}"}}
@@ -168,10 +155,10 @@ defmodule TicTacToe.Server do
   defp switch_player(state) do
     case state.current_token do
       "x" ->
-        %TicTacToe.GameState{state | :current_token => "o", :current_player => state.player_two}
+        %TicTacToe.LobbyState{state | :current_token => "o", :current_player => state.player_two}
 
       _ ->
-        %TicTacToe.GameState{state | :current_token => "x", :current_player => state.player_one}
+        %TicTacToe.LobbyState{state | :current_token => "x", :current_player => state.player_one}
     end
   end
 
@@ -181,36 +168,36 @@ defmodule TicTacToe.Server do
   defp is_over(state) do
     case state.board do
       [x, x, x, _, _, _, _, _, _] when x == state.current_token ->
-        %TicTacToe.GameState{state | :winner => state.current_player, :has_finished => true}
+        %TicTacToe.LobbyState{state | :winner => state.current_player, :has_finished => true}
 
       [_, _, _, x, x, x, _, _, _] when x == state.current_token ->
-        %TicTacToe.GameState{state | :winner => state.current_player, :has_finished => true}
+        %TicTacToe.LobbyState{state | :winner => state.current_player, :has_finished => true}
 
       [_, _, _, _, _, _, x, x, x] when x == state.current_token ->
-        %TicTacToe.GameState{state | :winner => state.current_player, :has_finished => true}
+        %TicTacToe.LobbyState{state | :winner => state.current_player, :has_finished => true}
 
       [x, _, _, x, _, _, x, _, _] when x == state.current_token ->
-        %TicTacToe.GameState{state | :winner => state.current_player, :has_finished => true}
+        %TicTacToe.LobbyState{state | :winner => state.current_player, :has_finished => true}
 
       [_, x, _, _, x, _, _, x, _] when x == state.current_token ->
-        %TicTacToe.GameState{state | :winner => state.current_player, :has_finished => true}
+        %TicTacToe.LobbyState{state | :winner => state.current_player, :has_finished => true}
 
       [_, _, x, _, _, x, _, _, x] when x == state.current_token ->
-        %TicTacToe.GameState{state | :winner => state.current_player, :has_finished => true}
+        %TicTacToe.LobbyState{state | :winner => state.current_player, :has_finished => true}
 
       [x, _, _, _, x, _, _, _, x] when x == state.current_token ->
-        %TicTacToe.GameState{state | :winner => state.current_player, :has_finished => true}
+        %TicTacToe.LobbyState{state | :winner => state.current_player, :has_finished => true}
 
       [_, _, x, _, x, _, x, _, _] when x == state.current_token ->
-        %TicTacToe.GameState{state | :winner => state.current_player, :has_finished => true}
+        %TicTacToe.LobbyState{state | :winner => state.current_player, :has_finished => true}
 
       [x, x, x, x, x, x, x, x, x] when x == state.current_token ->
         IO.puts("Does this work?")
-        %TicTacToe.GameState{state | :has_finished => true}
+        %TicTacToe.LobbyState{state | :has_finished => true}
 
       _ ->
         case Enum.all?(state.board, &(&1 != "")) do
-          true -> %TicTacToe.GameState{state | :has_finished => true}
+          true -> %TicTacToe.LobbyState{state | :has_finished => true}
           false -> state
         end
     end

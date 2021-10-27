@@ -29,7 +29,7 @@ defmodule TicTacToe do
   def create(lobby_id) do
     Horde.DynamicSupervisor.start_child(
       TicTacToe.GameSupervisor,
-      {TicTacToe.Server, lobby_id: lobby_id}
+      {TicTacToe.Lobby, lobby_id: lobby_id}
     )
   end
 end

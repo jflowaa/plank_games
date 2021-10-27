@@ -1,8 +1,8 @@
 defmodule PlankGamesWeb.TicTacToeLobbyLive do
   use PlankGamesWeb, :live_view
 
-  @topic inspect(__MODULE__)
-  @tictactoe_topc inspect(PlankGamesWeb.TicTacToeLive)
+  @topic inspect(TicTacToe.Lobby)
+  @tictactoe_topc inspect(TicTacToe.Activity)
 
   @impl true
   def mount(params, session, socket) do
@@ -34,7 +34,7 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
 
   @impl true
   def handle_event("move", %{"position" => position}, socket) do
-    case TicTacToe.Server.move(
+    case TicTacToe.Lobby.move(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :client_id),
            String.to_integer(position)
@@ -50,7 +50,7 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
         {:noreply, assign(socket, :messages, ["Not your turn" | get_tailing_messages(socket)])}
 
       :ok ->
-        state = TicTacToe.Server.lookup(Map.get(socket.assigns, :lobby_id))
+        state = TicTacToe.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
 
         if state.has_finished do
           if state.winner do
@@ -80,7 +80,7 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
 
   @impl true
   def handle_event("join", _, socket) do
-    case TicTacToe.Server.join(
+    case TicTacToe.Lobby.join(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :client_id)
          ) do
@@ -107,7 +107,7 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
 
   @impl true
   def handle_event("new", _, socket) do
-    case TicTacToe.Server.new(Map.get(socket.assigns, :lobby_id)) do
+    case TicTacToe.Lobby.new(Map.get(socket.assigns, :lobby_id)) do
       :not_finished ->
         {:noreply,
          assign(socket, :messages, ["Game is not yet finished" | get_tailing_messages(socket)])}
@@ -132,12 +132,8 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
 
   @impl true
   def handle_info(%Phoenix.Socket.Broadcast{event: "presence_diff", payload: diff}, socket) do
-    Enum.each(diff.joins, fn {client_id, _} ->
-      TicTacToe.Server.add_client(Map.get(socket.assigns, :lobby_id), client_id)
-    end)
-
     Enum.each(diff.leaves, fn {client_id, _} ->
-      if TicTacToe.Server.remove_client(Map.get(socket.assigns, :lobby_id), client_id) ==
+      if TicTacToe.Lobby.remove_client(Map.get(socket.assigns, :lobby_id), client_id) ==
            :player_left do
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
@@ -157,10 +153,13 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
   end
 
   defp fetch(socket) do
-    state = TicTacToe.Server.lookup(Map.get(socket.assigns, :lobby_id))
+    state = TicTacToe.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
 
     socket
-    |> assign(:client_count, Enum.count(Map.keys(state.clients)))
+    |> assign(
+      :client_count,
+      TicTacToe.Presence.list(@topic <> "_#{Map.get(socket.assigns, :lobby_id)}") |> map_size
+    )
     |> assign(:board, Map.get(state, :board))
     |> assign(:has_finished, Map.get(state, :has_finished))
     |> assign(:has_started, Map.get(state, :has_started))

@@ -1,4 +1,4 @@
-defmodule TicTacToe.GameState do
+defmodule TicTacToe.LobbyState do
   defstruct [
     :id,
     :player_one,
@@ -18,7 +18,6 @@ defmodule TicTacToe.GameState do
       ""
     ],
     has_started: false,
-    has_finished: false,
-    clients: %{}
+    has_finished: false
   ]
 end

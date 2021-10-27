@@ -1,7 +1,7 @@
 defmodule PlankGamesWeb.TicTacToeLive do
   use PlankGamesWeb, :live_view
 
-  @topic inspect(__MODULE__)
+  @topic inspect(TicTacToe.Activity)
 
   @impl true
   def mount(_, _, socket) do

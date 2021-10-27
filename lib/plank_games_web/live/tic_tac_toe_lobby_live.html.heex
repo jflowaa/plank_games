@@ -27,6 +27,7 @@
       <%= if @has_finished do %>
         <button phx-click="new">New Game</button>
       <% end %>
+      <a href={"/tictactoe"}><button>Leave</button></a>
       <%= if @player_token do %>
         <h4>Your Token: <%= @player_token %></h4>
       <% end %>
