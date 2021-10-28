@@ -2,6 +2,7 @@
 @import "./milligram.css";
 @import "./milligram_dark.css";
 @import "./tic_tac_toe.css";
+@import "./connect_four.css";
 @import "./lobby.css";
 
 /* Alerts and form errors used by phx.new */

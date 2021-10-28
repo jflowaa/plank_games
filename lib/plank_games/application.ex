@@ -22,7 +22,9 @@ defmodule PlankGames.Application do
       # Start a worker by calling: PlankGames.Worker.start_link(arg)
       # {PlankGames.Worker, arg}
       TicTacToe,
-      TicTacToe.Presence
+      TicTacToe.Presence,
+      ConnectFour,
+      ConnectFour.Presence
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -21,6 +21,8 @@ defmodule PlankGamesWeb.Router do
     get "/", PageController, :index
     live "/tictactoe", TicTacToeLive, :index
     live "/tictactoe/:lobby_id", TicTacToeLobbyLive, :index
+    live "/connectfour", ConnectFourLive, :index
+    live "/connectfour/:lobby_id", ConnectFourLobbyLive, :index
   end
 
   # Other scopes may use custom stacks.

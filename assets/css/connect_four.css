@@ -1,0 +1,14 @@
+.connect-four-board {
+  border-collapse: collapse;
+}
+
+.connect-four-board td {
+  border: 6px solid #222;
+  height: 125px;
+}
+
+.connect-four-board td:after {  
+  content: "";
+  display: block;
+}
+  
