@@ -107,17 +107,11 @@ defmodule ConnectFour.Lobby do
   def handle_call({:move, player_id, _}, _from, state) when state.current_player != player_id,
     do: {:reply, :not_turn, state}
 
-  def handle_call({:move, _, position}, _from, state) do
-    if Enum.at(state.board, position) == "" do
-      state = update_board(state, position) |> is_over
-
-      if state.has_finished do
-        {:reply, :ok, state}
-      else
-        {:reply, :ok, state |> switch_player}
-      end
+  def handle_call({:move, _, {row, column}}, _from, state) do
+    if state.has_finished do
+      {:reply, :ok, state}
     else
-      {:reply, :invalid_move, state}
+      {:reply, :ok, state |> switch_player}
     end
   end
 
@@ -166,9 +160,6 @@ defmodule ConnectFour.Lobby do
         }
     end
   end
-
-  defp update_board(state, position),
-    do: Map.put(state, :board, List.replace_at(state.board, position, state.current_token))
 
   defp is_over(state) do
     case state.board do

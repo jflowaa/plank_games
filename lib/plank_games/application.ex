@@ -7,11 +7,11 @@ defmodule PlankGames.Application do
 
   @impl true
   def start(_type, _args) do
-    topologies = Application.get_env(:libcluster, :topologies) || []
+    # topologies = Application.get_env(:libcluster, :topologies) || []
     redis_config = Application.get_env(:redix, :config) || raise "No Redis configuration provided"
 
     children = [
-      {Cluster.Supervisor, [topologies, [name: PlankGames.ClusterSupervisor]]},
+      # {Cluster.Supervisor, [topologies, [name: PlankGames.ClusterSupervisor]]},
       {Redix, name: :redix, host: Keyword.get(redis_config, :host)},
       # Start the Telemetry supervisor
       PlankGamesWeb.Telemetry,

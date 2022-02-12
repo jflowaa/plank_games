@@ -49,7 +49,7 @@ defmodule PlankGames.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:horde, "0.8.4"},
       {:uuid, "1.1.8"},
-      {:libcluster, "3.3.0"},
+      # {:libcluster, "3.3.0"},
       {:redix, "1.1.4"}
     ]
   end

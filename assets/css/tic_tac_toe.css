@@ -1,6 +1,6 @@
-
 .tic-tac-toe-board {
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .tic-tac-toe-board td {

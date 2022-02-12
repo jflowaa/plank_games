@@ -155,6 +155,8 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
   defp fetch(socket) do
     state = ConnectFour.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
 
+    IO.inspect(state)
+
     socket
     |> assign(
       :client_count,
@@ -166,29 +168,6 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
     |> assign(:current_token, Map.get(state, :current_token))
     |> assign(:winner, Map.get(state, :winner))
     |> assign(:player_token, determine_player_token(socket, state))
-  end
-
-  def render_square(%{position: position, board: board}, assigns \\ %{}) do
-    ~H"""
-    <td phx-click="move" phx-value-position={"#{position}"}>
-      <svg width="100%" height="100%" preserveAspectRatio="none">
-          <%= case Enum.at(board, position) do %>
-            <% "x" -> %>
-              <%= draw_svg_cross() %>
-            <% "o" -> %>
-              <circle cx="50%" cy="50%" r="25%" stroke="black" stroke-width="8" fill="white" fill-opacity="0.0"/>
-            <% _ -> %>
-          <% end %>
-      </svg>
-    </td>
-    """
-  end
-
-  def draw_svg_cross(assigns \\ %{}) do
-    ~H"""
-      <line x1="25%"" y1="25%" x2="75%", y2="75%" stroke="black" stroke-width="8"/>
-      <line x1="75%" y1="25%" x2="25%", y2="75%" stroke="black" stroke-width="8"/>
-    """
   end
 
   defp get_tailing_messages(socket), do: Enum.take(Map.get(socket.assigns, :messages), 5)

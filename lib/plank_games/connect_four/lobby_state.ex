@@ -6,17 +6,7 @@ defmodule ConnectFour.LobbyState do
     :current_player,
     :current_token,
     :winner,
-    board: [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
+    board: List.duplicate(List.duplicate("", 7), 6),
     has_started: false,
     has_finished: false
   ]

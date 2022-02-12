@@ -191,8 +191,7 @@ defmodule TicTacToe.Lobby do
       [_, _, x, _, x, _, x, _, _] when x == state.current_token ->
         %TicTacToe.LobbyState{state | :winner => state.current_player, :has_finished => true}
 
-      [x, x, x, x, x, x, x, x, x] when x == state.current_token ->
-        IO.puts("Does this work?")
+      [x, x, x, x, x, x, x, x, x] when x != "" ->
         %TicTacToe.LobbyState{state | :has_finished => true}
 
       _ ->

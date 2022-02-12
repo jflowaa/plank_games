@@ -1,6 +1,6 @@
-<div class="container" style="padding-top: 50px">
+<div>
   <div class="row">
-    <div class="column">
+    <div class="column column-75">
       <table class="tic-tac-toe-board">
         <tr>
           <%= for index <- 0..2 do %>
@@ -22,12 +22,12 @@
     <div class="column">
       <p>Players in lobby: <%= @client_count %></p>
       <%= if not @has_started do %>
-        <button phx-click="join">Join as Player</button>
+        <button phx-click="join" class="button-small">Join</button>
       <% end %>
       <%= if @has_finished do %>
-        <button phx-click="new">New Game</button>
+        <button phx-click="new" class="button-small">New Game</button>
       <% end %>
-      <a href={"/tictactoe"}><button>Leave</button></a>
+      <a href={"/tictactoe"}><button class="button-small">Leave Lobby</button></a>
       <%= if @player_token do %>
         <h4>Your Token: <%= @player_token %></h4>
       <% end %>
