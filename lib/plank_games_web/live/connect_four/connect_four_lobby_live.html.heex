@@ -4,8 +4,8 @@
       <table class="connect-four-board">
         <%= for row <- @board do %>
           <tr>
-            <%= for columnCell <- row do %>
-              <td> <%= columnCell %> </td>
+            <%= for cell <- Enum.with_index(row) do %>
+              <td phx-click="move" phx-value-position={elem(cell, 1)}> <%= elem(cell, 0) %> </td>
             <% end %>          
           </tr>
         <% end %>

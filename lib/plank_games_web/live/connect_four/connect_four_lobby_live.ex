@@ -155,14 +155,12 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
   defp fetch(socket) do
     state = ConnectFour.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
 
-    IO.inspect(state)
-
     socket
     |> assign(
       :client_count,
       ConnectFour.Presence.list(@topic <> "_#{Map.get(socket.assigns, :lobby_id)}") |> map_size
     )
-    |> assign(:board, Map.get(state, :board))
+    |> assign(:board, ConnectFour.LobbyState.display(Map.get(state, :board)))
     |> assign(:has_finished, Map.get(state, :has_finished))
     |> assign(:has_started, Map.get(state, :has_started))
     |> assign(:current_token, Map.get(state, :current_token))

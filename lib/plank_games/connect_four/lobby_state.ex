@@ -1,4 +1,7 @@
 defmodule ConnectFour.LobbyState do
+  @rows 6
+  @columns 7
+
   defstruct [
     :id,
     :player_one,
@@ -6,8 +9,20 @@ defmodule ConnectFour.LobbyState do
     :current_player,
     :current_token,
     :winner,
-    board: List.duplicate(List.duplicate("", 7), 6),
+    board: for(r <- 0..@rows, c <- 0..@columns, into: %{}, do: {{r, c}, :empty}),
     has_started: false,
     has_finished: false
   ]
+
+  def display(board) do
+    for row <- @rows..0 do
+      for column <- 0..@columns do
+        case Map.get(board, {row, column}) do
+          :empty -> " "
+          :red -> "R"
+          :black -> "B"
+        end
+      end
+    end
+  end
 end

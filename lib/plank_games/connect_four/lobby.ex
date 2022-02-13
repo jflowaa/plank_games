@@ -2,6 +2,9 @@ defmodule ConnectFour.Lobby do
   use GenServer
   require Logger
 
+  @rows 6
+  @columns 7
+
   def lookup(lobby_id) do
     try do
       GenServer.call(via_tuple(lobby_id), :get)
@@ -65,7 +68,7 @@ defmodule ConnectFour.Lobby do
          :player_one => state.player_one,
          :player_two => state.player_two,
          :current_player => state.player_one,
-         :current_token => "x",
+         :current_token => :red,
          :has_started => true
        }}
     else
@@ -91,7 +94,7 @@ defmodule ConnectFour.Lobby do
              state
              | :player_two => player_id,
                :current_player => state.player_one,
-               :current_token => "x",
+               :current_token => :red,
                :has_started => true
            }}
         end
@@ -107,11 +110,26 @@ defmodule ConnectFour.Lobby do
   def handle_call({:move, player_id, _}, _from, state) when state.current_player != player_id,
     do: {:reply, :not_turn, state}
 
-  def handle_call({:move, _, {row, column}}, _from, state) do
+  def handle_call({:move, _, column}, _from, state) do
     if state.has_finished do
       {:reply, :ok, state}
     else
-      {:reply, :ok, state |> switch_player}
+      result = drop_checker(state.board, column, state.current_token)
+
+      if elem(result, 0) == :full do
+        {:reply, :invalid_move, state}
+      else
+        case is_over(elem(result, 1), column) do
+          {:over, _} ->
+            {:reply, :ok,
+             Map.put(state, :board, elem(result, 1))
+             |> Map.put(:has_finished, true)
+             |> Map.put(:winner, state.current_player)}
+
+          _ ->
+            {:reply, elem(result, 0), Map.put(state, :board, elem(result, 1)) |> switch_player}
+        end
+      end
     end
   end
 
@@ -122,7 +140,7 @@ defmodule ConnectFour.Lobby do
          %ConnectFour.LobbyState{
            :id => state.id,
            :player_two => state.player_two,
-           :current_token => "x",
+           :current_token => :red,
            :has_started => false
          }}
 
@@ -131,7 +149,7 @@ defmodule ConnectFour.Lobby do
          %ConnectFour.LobbyState{
            :id => state.id,
            :player_one => state.player_one,
-           :current_token => "x",
+           :current_token => :red,
            :has_started => false
          }}
 
@@ -145,57 +163,102 @@ defmodule ConnectFour.Lobby do
 
   defp switch_player(state) do
     case state.current_token do
-      "x" ->
+      :red ->
         %ConnectFour.LobbyState{
           state
-          | :current_token => "o",
+          | :current_token => :black,
             :current_player => state.player_two
         }
 
       _ ->
         %ConnectFour.LobbyState{
           state
-          | :current_token => "x",
+          | :current_token => :red,
             :current_player => state.player_one
         }
     end
   end
 
-  defp is_over(state) do
-    case state.board do
-      [x, x, x, _, _, _, _, _, _] when x == state.current_token ->
-        %ConnectFour.LobbyState{state | :winner => state.current_player, :has_finished => true}
+  def display(board) do
+    ConnectFour.LobbyState.display(board)
+  end
 
-      [_, _, _, x, x, x, _, _, _] when x == state.current_token ->
-        %ConnectFour.LobbyState{state | :winner => state.current_player, :has_finished => true}
+  defp drop_checker(board, column, _) when column < 0 or column > @columns,
+    do: {:invalid_drop, board}
 
-      [_, _, _, _, _, _, x, x, x] when x == state.current_token ->
-        %ConnectFour.LobbyState{state | :winner => state.current_player, :has_finished => true}
+  defp drop_checker(board, column, checker) do
+    placed_row =
+      Enum.take_while(0..@rows, fn x -> Map.get(board, {x, column}) != :empty end)
+      |> Enum.count()
 
-      [x, _, _, x, _, _, x, _, _] when x == state.current_token ->
-        %ConnectFour.LobbyState{state | :winner => state.current_player, :has_finished => true}
-
-      [_, x, _, _, x, _, _, x, _] when x == state.current_token ->
-        %ConnectFour.LobbyState{state | :winner => state.current_player, :has_finished => true}
-
-      [_, _, x, _, _, x, _, _, x] when x == state.current_token ->
-        %ConnectFour.LobbyState{state | :winner => state.current_player, :has_finished => true}
-
-      [x, _, _, _, x, _, _, _, x] when x == state.current_token ->
-        %ConnectFour.LobbyState{state | :winner => state.current_player, :has_finished => true}
-
-      [_, _, x, _, x, _, x, _, _] when x == state.current_token ->
-        %ConnectFour.LobbyState{state | :winner => state.current_player, :has_finished => true}
-
-      [x, x, x, x, x, x, x, x, x] when x == state.current_token ->
-        IO.puts("Does this work?")
-        %ConnectFour.LobbyState{state | :has_finished => true}
-
-      _ ->
-        case Enum.all?(state.board, &(&1 != "")) do
-          true -> %ConnectFour.LobbyState{state | :has_finished => true}
-          false -> state
-        end
+    cond do
+      placed_row == 7 -> {:full, board}
+      true -> {:ok, Map.put(board, {placed_row, column}, checker)}
     end
   end
+
+  defp is_over(board, column) do
+    # TODO: check if entire board is full
+    placed_row =
+      Enum.take_while(0..@rows, fn x -> Map.get(board, {x, column}) != :empty end)
+      |> Enum.count()
+      |> minus(1)
+
+    target_checker = Map.get(board, {placed_row, column})
+
+    cond do
+      Enum.take_while(column..@columns, fn x ->
+        Map.get(board, {placed_row, x}) == target_checker
+      end)
+      |> Enum.count() >= 4 ->
+        {:over, target_checker}
+
+      Enum.take_while(column..0, fn x ->
+        Map.get(board, {placed_row, x}) == target_checker
+      end)
+      |> Enum.count() >= 4 ->
+        {:over, target_checker}
+
+      Enum.take_while(placed_row..@rows, fn x ->
+        Map.get(board, {x, column}) == target_checker
+      end)
+      |> Enum.count() >= 4 ->
+        {:over, target_checker}
+
+      Enum.take_while(placed_row..0, fn x ->
+        Map.get(board, {x, column}) == target_checker
+      end)
+      |> Enum.count() >= 4 ->
+        {:over, target_checker}
+
+      Enum.take_while(placed_row..@rows, fn x ->
+        Map.get(board, {x, column + (x - placed_row)}) == target_checker
+      end)
+      |> Enum.count() >= 4 ->
+        {:over, target_checker}
+
+      Enum.take_while(placed_row..@rows, fn x ->
+        Map.get(board, {x, column - (x - placed_row)}) == target_checker
+      end)
+      |> Enum.count() >= 4 ->
+        {:over, target_checker}
+
+      Enum.take_while(placed_row..0, fn x ->
+        Map.get(board, {x, column + (placed_row - x)}) == target_checker
+      end)
+      |> Enum.count() >= 4 ->
+        {:over, target_checker}
+
+      Enum.take_while(placed_row..0, fn x ->
+        Map.get(board, {x, column - (placed_row - x)}) == target_checker
+      end)
+      |> Enum.count() >= 4 ->
+        {:over, target_checker}
+
+      true ->
+        {:ongoing, nil}
+    end
+  end
+
+  defp minus(x, y), do: x - y
 end
