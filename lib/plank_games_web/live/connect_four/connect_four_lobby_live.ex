@@ -172,8 +172,8 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
 
   defp determine_player_token(socket, state) do
     cond do
-      Map.get(socket.assigns, :client_id) == Map.get(state, :player_one) -> "x"
-      Map.get(socket.assigns, :client_id) == Map.get(state, :player_two) -> "o"
+      Map.get(socket.assigns, :client_id) == Map.get(state, :player_one) -> "red"
+      Map.get(socket.assigns, :client_id) == Map.get(state, :player_two) -> "black"
       true -> nil
     end
   end

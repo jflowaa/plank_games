@@ -179,10 +179,6 @@ defmodule ConnectFour.Lobby do
     end
   end
 
-  def display(board) do
-    ConnectFour.LobbyState.display(board)
-  end
-
   defp drop_checker(board, column, _) when column < 0 or column > @columns,
     do: {:invalid_drop, board}
 
