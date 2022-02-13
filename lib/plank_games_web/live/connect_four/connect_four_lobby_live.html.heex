@@ -1,15 +1,23 @@
 <div>
   <div class="row">
     <div class="column column-75">
-      <table class="connect-four-board">
-        <%= for row <- @board do %>
-          <tr>
-            <%= for cell <- Enum.with_index(row) do %>
-              <td phx-click="move" phx-value-position={elem(cell, 1)}> <%= elem(cell, 0) %> </td>
-            <% end %>          
-          </tr>
-        <% end %>
-      </table>
+      <%= for row <- Enum.with_index(@board) do %>
+        <div class="row">
+          <%= for cell <- Enum.with_index(elem(row, 0)) do %>
+            <svg phx-click="move" phx-value-position={elem(cell, 1)} width="14%" height="100px" style="padding: 1px;" preserveAspectRatio="none">
+              <rect x="0" y="0" width="100%" height="100%" fill="blue" />
+              <%= case elem(cell, 0) do %>
+                <% :red -> %>
+                  <circle cx="50%" cy="50%" r="35%" fill="red" />
+                <% :black -> %>
+                  <circle cx="50%" cy="50%" r="35%" fill="black"/>
+                <% _ -> %>
+                  <circle cx="50%" cy="50%" r="35%" fill="white"/>
+              <% end %>
+            </svg>
+          <% end %>
+        </div>
+      <% end %>
     </div>
     <div class="column">
       <p>Players in lobby: <%= @client_count %></p>

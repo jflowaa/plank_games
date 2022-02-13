@@ -17,11 +17,7 @@ defmodule ConnectFour.LobbyState do
   def display(board) do
     for row <- @rows..0 do
       for column <- 0..@columns do
-        case Map.get(board, {row, column}) do
-          :empty -> " "
-          :red -> "R"
-          :black -> "B"
-        end
+        Map.get(board, {row, column})
       end
     end
   end
