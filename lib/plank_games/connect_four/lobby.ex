@@ -120,6 +120,11 @@ defmodule ConnectFour.Lobby do
         {:reply, :invalid_move, state}
       else
         case is_over(elem(result, 1), column) do
+          {:tie, _} ->
+            {:reply, :ok,
+             Map.put(state, :board, elem(result, 1))
+             |> Map.put(:has_finished, true)}
+
           {:over, _} ->
             {:reply, :ok,
              Map.put(state, :board, elem(result, 1))
@@ -183,70 +188,71 @@ defmodule ConnectFour.Lobby do
     do: {:invalid_drop, board}
 
   defp drop_checker(board, column, checker) do
-    placed_row =
-      Enum.take_while(0..@rows, fn x -> Map.get(board, {x, column}) != :empty end)
-      |> Enum.count()
+    row = landed_row(board, column)
 
     cond do
-      placed_row == 7 -> {:full, board}
-      true -> {:ok, Map.put(board, {placed_row, column}, checker)}
+      row == 7 -> {:full, board}
+      true -> {:ok, Map.put(board, {row, column}, checker)}
     end
   end
 
   defp is_over(board, column) do
-    # TODO: check if entire board is full
-    placed_row =
-      Enum.take_while(0..@rows, fn x -> Map.get(board, {x, column}) != :empty end)
-      |> Enum.count()
+    row =
+      landed_row(board, column)
+      # minus 1 because we want the row at the time of drop
       |> minus(1)
 
-    target_checker = Map.get(board, {placed_row, column})
+    target_checker = Map.get(board, {row, column})
 
     cond do
-      Enum.take_while(column..@columns, fn x ->
-        Map.get(board, {placed_row, x}) == target_checker
+      board
+      |> list_rows()
+      |> Enum.filter(fn x -> is_group_of_four?(x, target_checker) end)
+      |> Enum.count() > 0 ->
+        {:over, target_checker}
+
+      board
+      |> list_columns()
+      |> Enum.filter(fn x -> is_group_of_four?(x, target_checker) end)
+      |> Enum.count() > 0 ->
+        {:over, target_checker}
+
+      # list_rows(board)
+      # |> List.flatten()
+      # |> Enum.chunk_every(6)
+      # |> Enum.filter(fn x ->
+      #   is_group_of_four?(x, target_checker)
+      # end)
+      # |> Enum.count() > 4 ->
+      #   {:over, target_checker}
+
+      board
+      |> list_rows()
+      |> List.flatten()
+      |> Enum.filter(fn x -> x == :empty end)
+      |> Enum.count() == 0 ->
+        {:tie, nil}
+
+      Enum.take_while(row..@rows, fn x ->
+        Map.get(board, {x, column + (x - row)}) == target_checker
       end)
       |> Enum.count() >= 4 ->
         {:over, target_checker}
 
-      Enum.take_while(column..0, fn x ->
-        Map.get(board, {placed_row, x}) == target_checker
+      Enum.take_while(row..@rows, fn x ->
+        Map.get(board, {x, column - (x - row)}) == target_checker
       end)
       |> Enum.count() >= 4 ->
         {:over, target_checker}
 
-      Enum.take_while(placed_row..@rows, fn x ->
-        Map.get(board, {x, column}) == target_checker
+      Enum.take_while(row..0, fn x ->
+        Map.get(board, {x, column + (row - x)}) == target_checker
       end)
       |> Enum.count() >= 4 ->
         {:over, target_checker}
 
-      Enum.take_while(placed_row..0, fn x ->
-        Map.get(board, {x, column}) == target_checker
-      end)
-      |> Enum.count() >= 4 ->
-        {:over, target_checker}
-
-      Enum.take_while(placed_row..@rows, fn x ->
-        Map.get(board, {x, column + (x - placed_row)}) == target_checker
-      end)
-      |> Enum.count() >= 4 ->
-        {:over, target_checker}
-
-      Enum.take_while(placed_row..@rows, fn x ->
-        Map.get(board, {x, column - (x - placed_row)}) == target_checker
-      end)
-      |> Enum.count() >= 4 ->
-        {:over, target_checker}
-
-      Enum.take_while(placed_row..0, fn x ->
-        Map.get(board, {x, column + (placed_row - x)}) == target_checker
-      end)
-      |> Enum.count() >= 4 ->
-        {:over, target_checker}
-
-      Enum.take_while(placed_row..0, fn x ->
-        Map.get(board, {x, column - (placed_row - x)}) == target_checker
+      Enum.take_while(row..0, fn x ->
+        Map.get(board, {x, column - (row - x)}) == target_checker
       end)
       |> Enum.count() >= 4 ->
         {:over, target_checker}
@@ -257,4 +263,35 @@ defmodule ConnectFour.Lobby do
   end
 
   defp minus(x, y), do: x - y
+
+  defp landed_row(board, column),
+    do:
+      Enum.take_while(0..@rows, fn x -> Map.get(board, {x, column}) != :empty end)
+      |> Enum.count()
+
+  defp is_group_of_four?(row, target_checker) do
+    List.foldl(row, 0, fn entry, acc ->
+      case {entry, acc} do
+        {_, 4} -> 4
+        {^target_checker, _} -> acc + 1
+        _ -> 0
+      end
+    end) == 4
+  end
+
+  def list_rows(board) do
+    for row <- @rows..0 do
+      for column <- 0..@columns do
+        Map.get(board, {row, column})
+      end
+    end
+  end
+
+  def list_columns(board) do
+    for column <- 0..@columns do
+      for row <- @rows..0 do
+        Map.get(board, {row, column})
+      end
+    end
+  end
 end

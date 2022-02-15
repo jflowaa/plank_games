@@ -1,15 +1,9 @@
-.connect-four-board {
-  border-collapse: collapse;
-  table-layout: fixed;
+.connect-four-row {
+  flex-direction: row;
 }
 
-.connect-four-board td {
-  border: 6px solid #222;
-  height: 125px;
+.connect-four-cell {
+  width: 75px;
+  height: 75px;
+  padding: 1px;
 }
-
-.connect-four-board td:after {  
-  content: "";
-  display: block;
-}
-  
