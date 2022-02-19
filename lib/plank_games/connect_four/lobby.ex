@@ -1,5 +1,5 @@
 defmodule ConnectFour.Lobby do
-  use GenServer
+  use GenServer, restart: :transient
   require Logger
 
   @rows 6
@@ -142,24 +142,24 @@ defmodule ConnectFour.Lobby do
     case client_id do
       x when x == state.player_one ->
         {:reply, :player_left,
-         %ConnectFour.LobbyState{
-           :id => state.id,
-           :player_two => state.player_two,
-           :current_token => :red,
-           :has_started => false
-         }}
+         %ConnectFour.LobbyState{state | :player_one => nil, :has_started => false}}
 
       x when x == state.player_two ->
         {:reply, :player_left,
-         %ConnectFour.LobbyState{
-           :id => state.id,
-           :player_one => state.player_one,
-           :current_token => :red,
-           :has_started => false
-         }}
+         %ConnectFour.LobbyState{state | :player_two => nil, :has_started => false}}
 
       _ ->
         {:reply, :ok, state}
+    end
+  end
+
+  def handle_info(:close, state) do
+    cond do
+      is_nil(Map.get(state, :player_one)) and is_nil(Map.get(state, :player_two)) ->
+        {:stop, :normal, state}
+
+      true ->
+        {:noreply, state}
     end
   end
 

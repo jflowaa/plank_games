@@ -42,6 +42,10 @@ defmodule TicTacToe.Activity do
     Enum.reduce(children, %{}, fn child, state ->
       lobby_state = :sys.get_state(elem(child, 1))
 
+      if TicTacToe.Presence.list("#{inspect(TicTacToe.Lobby)}_#{lobby_state.id}") |> map_size == 0 do
+        Process.send_after(elem(child, 1), :close, 10000)
+      end
+
       Map.put(
         state,
         lobby_state.id,

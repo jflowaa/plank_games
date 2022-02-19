@@ -1,5 +1,5 @@
 defmodule TicTacToe.Lobby do
-  use GenServer
+  use GenServer, restart: :transient
   require Logger
 
   def lookup(lobby_id) do
@@ -45,16 +45,6 @@ defmodule TicTacToe.Lobby do
 
       _ ->
         {:ok, %TicTacToe.LobbyState{:id => Keyword.get(args, :lobby_id)}}
-    end
-  end
-
-  def terminate(_, state) do
-    if state.has_started do
-      Redix.noreply_command(:redix, [
-        "SET",
-        Map.get(state, :id),
-        :erlang.term_to_binary(state)
-      ])
     end
   end
 
@@ -128,24 +118,24 @@ defmodule TicTacToe.Lobby do
     case client_id do
       x when x == state.player_one ->
         {:reply, :player_left,
-         %TicTacToe.LobbyState{
-           :id => state.id,
-           :player_two => state.player_two,
-           :current_token => "x",
-           :has_started => false
-         }}
+         %TicTacToe.LobbyState{state | :player_one => nil, :has_started => false}}
 
       x when x == state.player_two ->
         {:reply, :player_left,
-         %TicTacToe.LobbyState{
-           :id => state.id,
-           :player_one => state.player_one,
-           :current_token => "x",
-           :has_started => false
-         }}
+         %TicTacToe.LobbyState{state | :player_two => nil, :has_started => false}}
 
       _ ->
         {:reply, :ok, state}
+    end
+  end
+
+  def handle_info(:close, state) do
+    cond do
+      is_nil(Map.get(state, :player_one)) and is_nil(Map.get(state, :player_two)) ->
+        {:stop, :normal, state}
+
+      true ->
+        {:noreply, state}
     end
   end
 
