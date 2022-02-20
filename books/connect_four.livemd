@@ -1,0 +1,193 @@
+# Connect Four
+
+## Board Module
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+defmodule Board do
+  @rows 6
+  @columns 7
+
+  def new(), do: for(r <- 0..@rows, c <- 0..@columns, into: %{}, do: {{r, c}, :empty})
+
+  def list_rows(board) do
+    for row <- @rows..0 do
+      for column <- 0..@columns do
+        Map.get(board, {row, column})
+      end
+    end
+  end
+
+  def list_columns(board) do
+    for column <- 0..@columns do
+      for row <- @rows..0 do
+        Map.get(board, {row, column})
+      end
+    end
+  end
+
+  def drop_checker(board, column, _) when column < 0 or column > @columns,
+    do: {:invalid_drop, board}
+
+  def drop_checker(board, column, checker) do
+    row = landed_row(board, column)
+
+    cond do
+      row == 7 -> {:full, board}
+      true -> {:ok, Map.put(board, {row, column}, checker)}
+    end
+  end
+
+  def is_over(board, column) do
+    row =
+      landed_row(board, column)
+      # minus 1 because we want the row at the time of drop
+      |> minus(1)
+
+    target_checker = Map.get(board, {row, column})
+
+    cond do
+      board
+      |> list_rows()
+      |> Enum.filter(fn x -> is_group_of_four?(x, target_checker) end)
+      |> Enum.count() > 0 ->
+        {:over, target_checker}
+
+      board
+      |> list_columns()
+      |> Enum.filter(fn x -> is_group_of_four?(x, target_checker) end)
+      |> Enum.count() > 0 ->
+        {:over, target_checker}
+
+      board
+      |> list_rows()
+      |> List.flatten()
+      |> Enum.reverse()
+      |> Enum.drop(3)
+      |> Enum.chunk_every(9, 9, :discard)
+      |> List.zip()
+      |> Enum.filter(fn x ->
+        is_group_of_four?(Tuple.to_list(x), target_checker)
+      end)
+      |> Enum.count() > 0 ->
+        {:over, target_checker}
+
+      board
+      |> list_rows()
+      |> List.flatten()
+      # |> Enum.drop(3)
+      |> Enum.reverse()
+      # |> IO.inspect()
+      |> Enum.chunk_every(7, 7, :discard)
+      |> List.zip()
+      # |> IO.inspect()
+      |> Enum.filter(fn x ->
+        is_group_of_four?(Tuple.to_list(x), target_checker)
+      end)
+      |> Enum.count() > 0 ->
+        {:over, target_checker}
+
+      board
+      |> list_rows()
+      |> List.flatten()
+      |> Enum.filter(fn x -> x == :empty end)
+      |> Enum.count() == 0 ->
+        {:over, nil}
+
+      true ->
+        {:ongoing, nil}
+    end
+  end
+
+  defp minus(x, y), do: x - y
+
+  defp landed_row(board, column),
+    do:
+      Enum.take_while(0..@rows, fn x -> Map.get(board, {x, column}) != :empty end)
+      |> Enum.count()
+
+  defp is_group_of_four?(row, target_checker) do
+    List.foldl(row, 0, fn entry, acc ->
+      case {entry, acc} do
+        {_, 4} -> 4
+        {^target_checker, _} -> acc + 1
+        _ -> 0
+      end
+    end) == 4
+  end
+end
+```
+
+## Testing
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+# Horizontal
+result = Board.drop_checker(Board.new(), 3, :red)
+result = Board.drop_checker(elem(result, 1), 1, :red)
+result = Board.drop_checker(elem(result, 1), 4, :red)
+result = Board.drop_checker(elem(result, 1), 2, :red)
+# IO.inspect(Board.is_over(elem(result, 1), 4))
+
+# Vertical
+result = Board.drop_checker(Board.new(), 1, :red)
+result = Board.drop_checker(elem(result, 1), 1, :red)
+result = Board.drop_checker(elem(result, 1), 1, :red)
+result = Board.drop_checker(elem(result, 1), 1, :red)
+# IO.inspect(Board.is_over(elem(result, 1), 1))
+
+# Diagonal left col 3 row 0
+result = Board.drop_checker(Board.new(), 2, :black)
+result = Board.drop_checker(elem(result, 1), 2, :red)
+result = Board.drop_checker(elem(result, 1), 0, :black)
+result = Board.drop_checker(elem(result, 1), 0, :black)
+result = Board.drop_checker(elem(result, 1), 0, :black)
+result = Board.drop_checker(elem(result, 1), 0, :red)
+result = Board.drop_checker(elem(result, 1), 3, :red)
+result = Board.drop_checker(elem(result, 1), 1, :black)
+result = Board.drop_checker(elem(result, 1), 1, :black)
+result = Board.drop_checker(elem(result, 1), 1, :red)
+# IO.inspect(Board.is_over(elem(result, 1), 1))
+
+# Diagonal right col 0 row 0
+result = Board.drop_checker(Board.new(), 2, :black)
+result = Board.drop_checker(elem(result, 1), 2, :black)
+result = Board.drop_checker(elem(result, 1), 2, :red)
+result = Board.drop_checker(elem(result, 1), 3, :black)
+result = Board.drop_checker(elem(result, 1), 3, :black)
+result = Board.drop_checker(elem(result, 1), 3, :black)
+result = Board.drop_checker(elem(result, 1), 3, :red)
+result = Board.drop_checker(elem(result, 1), 1, :black)
+result = Board.drop_checker(elem(result, 1), 1, :red)
+result = Board.drop_checker(elem(result, 1), 0, :red)
+# IO.inspect(Board.is_over(elem(result, 1), 0))
+
+# Diagonal right col 3 row 3
+result = Board.drop_checker(Board.new(), 2, :black)
+result = Board.drop_checker(elem(result, 1), 2, :black)
+result = Board.drop_checker(elem(result, 1), 2, :black)
+result = Board.drop_checker(elem(result, 1), 2, :red)
+result = Board.drop_checker(elem(result, 1), 3, :black)
+result = Board.drop_checker(elem(result, 1), 3, :black)
+result = Board.drop_checker(elem(result, 1), 3, :black)
+result = Board.drop_checker(elem(result, 1), 3, :red)
+result = Board.drop_checker(elem(result, 1), 3, :red)
+result = Board.drop_checker(elem(result, 1), 4, :black)
+result = Board.drop_checker(elem(result, 1), 4, :black)
+result = Board.drop_checker(elem(result, 1), 4, :black)
+result = Board.drop_checker(elem(result, 1), 4, :red)
+result = Board.drop_checker(elem(result, 1), 4, :red)
+result = Board.drop_checker(elem(result, 1), 4, :red)
+result = Board.drop_checker(elem(result, 1), 5, :red)
+result = Board.drop_checker(elem(result, 1), 5, :red)
+result = Board.drop_checker(elem(result, 1), 5, :red)
+result = Board.drop_checker(elem(result, 1), 5, :black)
+result = Board.drop_checker(elem(result, 1), 5, :black)
+result = Board.drop_checker(elem(result, 1), 5, :black)
+result = Board.drop_checker(elem(result, 1), 5, :red)
+IO.inspect(Board.is_over(elem(result, 1), 2))
+
+Board.list_rows(elem(result, 1))
+```

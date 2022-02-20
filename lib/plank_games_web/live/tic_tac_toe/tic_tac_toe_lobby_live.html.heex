@@ -21,8 +21,8 @@
     </div>
     <div class="column">
       <p>Players in lobby: <%= @client_count %></p>
-      <%= if not @has_started do %>
-        <button phx-click="join" class="button-small">Join</button>
+      <%= if @show_join do %>
+        <button phx-click="join" class="button-small">Join Game</button>
       <% end %>
       <%= if @has_finished do %>
         <button phx-click="new" class="button-small">New Game</button>

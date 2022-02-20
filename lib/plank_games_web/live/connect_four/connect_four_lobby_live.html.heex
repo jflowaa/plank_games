@@ -21,13 +21,13 @@
     </div>
     <div class="column">
       <p>Players in lobby: <%= @client_count %></p>
-      <%= if not @has_started do %>
-        <button phx-click="join" class="button-small">Join</button>
+      <%= if @show_join do %>
+        <button phx-click="join" class="button-small">Join Game</button>
       <% end %>
       <%= if @has_finished do %>
         <button phx-click="new" class="button-small">New Game</button>
       <% end %>
-      <a href={"/tictactoe"}><button class="button-small">Leave Lobby</button></a>
+      <a href={"/connectfour"}><button class="button-small">Leave Lobby</button></a>
       <%= if @player_token do %>
         <h4>Your Token: <%= @player_token %></h4>
       <% end %>

@@ -166,6 +166,20 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
     |> assign(:current_token, Map.get(state, :current_token))
     |> assign(:winner, Map.get(state, :winner))
     |> assign(:player_token, determine_player_token(socket, state))
+    |> assign(:show_join, should_show_join?(state, Map.get(socket.assigns, :client_id)))
+  end
+
+  defp should_show_join?(state, client_id) do
+    cond do
+      Map.get(state, :player_one) == client_id || Map.get(state, :player_two) == client_id ->
+        false
+
+      Map.get(state, :has_started) ->
+        false
+
+      true ->
+        true
+    end
   end
 
   def render_square(%{position: position, board: board}, assigns \\ %{}) do

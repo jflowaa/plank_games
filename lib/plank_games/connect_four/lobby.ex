@@ -217,14 +217,29 @@ defmodule ConnectFour.Lobby do
       |> Enum.count() > 0 ->
         {:over, target_checker}
 
-      # list_rows(board)
-      # |> List.flatten()
-      # |> Enum.chunk_every(6)
-      # |> Enum.filter(fn x ->
-      #   is_group_of_four?(x, target_checker)
-      # end)
-      # |> Enum.count() > 4 ->
-      #   {:over, target_checker}
+      board
+      |> list_rows()
+      |> List.flatten()
+      |> Enum.reverse()
+      |> Enum.chunk_every(9, 9, :discard)
+      |> List.zip()
+      |> Enum.filter(fn x ->
+        is_group_of_four?(Tuple.to_list(x), target_checker)
+      end)
+      |> Enum.count() > 0 ->
+        {:over, target_checker}
+
+      board
+      |> list_rows()
+      |> List.flatten()
+      |> Enum.reverse()
+      |> Enum.chunk_every(7, 7, :discard)
+      |> List.zip()
+      |> Enum.filter(fn x ->
+        is_group_of_four?(Tuple.to_list(x), target_checker)
+      end)
+      |> Enum.count() > 0 ->
+        {:over, target_checker}
 
       board
       |> list_rows()
@@ -232,30 +247,6 @@ defmodule ConnectFour.Lobby do
       |> Enum.filter(fn x -> x == :empty end)
       |> Enum.count() == 0 ->
         {:tie, nil}
-
-      Enum.take_while(row..@rows, fn x ->
-        Map.get(board, {x, column + (x - row)}) == target_checker
-      end)
-      |> Enum.count() >= 4 ->
-        {:over, target_checker}
-
-      Enum.take_while(row..@rows, fn x ->
-        Map.get(board, {x, column - (x - row)}) == target_checker
-      end)
-      |> Enum.count() >= 4 ->
-        {:over, target_checker}
-
-      Enum.take_while(row..0, fn x ->
-        Map.get(board, {x, column + (row - x)}) == target_checker
-      end)
-      |> Enum.count() >= 4 ->
-        {:over, target_checker}
-
-      Enum.take_while(row..0, fn x ->
-        Map.get(board, {x, column - (row - x)}) == target_checker
-      end)
-      |> Enum.count() >= 4 ->
-        {:over, target_checker}
 
       true ->
         {:ongoing, nil}

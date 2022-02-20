@@ -166,6 +166,20 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
     |> assign(:current_token, Map.get(state, :current_token))
     |> assign(:winner, Map.get(state, :winner))
     |> assign(:player_token, determine_player_token(socket, state))
+    |> assign(:show_join, should_show_join?(state, Map.get(socket.assigns, :client_id)))
+  end
+
+  defp should_show_join?(state, client_id) do
+    cond do
+      Map.get(state, :player_one) == client_id || Map.get(state, :player_two) == client_id ->
+        false
+
+      Map.get(state, :has_started) ->
+        false
+
+      true ->
+        true
+    end
   end
 
   defp get_tailing_messages(socket), do: Enum.take(Map.get(socket.assigns, :messages), 5)
