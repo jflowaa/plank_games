@@ -2,9 +2,6 @@ defmodule ConnectFour.Lobby do
   use GenServer, restart: :transient
   require Logger
 
-  @rows 6
-  @columns 7
-
   def lookup(lobby_id) do
     try do
       GenServer.call(via_tuple(lobby_id), :get)
@@ -38,14 +35,7 @@ defmodule ConnectFour.Lobby do
 
   def init(args) do
     Process.flag(:trap_exit, true)
-
-    case Redix.command(:redix, ["GET", Keyword.get(args, :lobby_id)]) do
-      {:ok, x} when not is_nil(x) ->
-        {:ok, :erlang.binary_to_term(x)}
-
-      _ ->
-        {:ok, %ConnectFour.LobbyState{:id => Keyword.get(args, :lobby_id)}}
-    end
+    {:ok, Common.LobbyState.new(Keyword.get(args, :lobby_id), :connectfour)}
   end
 
   def terminate(_, state) do
@@ -62,15 +52,7 @@ defmodule ConnectFour.Lobby do
 
   def handle_call(:new, _from, state) do
     if state.has_finished do
-      {:reply, :ok,
-       %ConnectFour.LobbyState{
-         :id => state.id,
-         :player_one => state.player_one,
-         :player_two => state.player_two,
-         :current_player => state.player_one,
-         :current_token => :red,
-         :has_started => true
-       }}
+      {:reply, :ok, Common.LobbyState.new(state)}
     else
       {:reply, :not_finished, state}
     end
@@ -89,14 +71,7 @@ defmodule ConnectFour.Lobby do
         if player_id == state.player_one do
           {:reply, :already_joined, state}
         else
-          {:reply, :ok,
-           %ConnectFour.LobbyState{
-             state
-             | :player_two => player_id,
-               :current_player => state.player_one,
-               :current_token => :red,
-               :has_started => true
-           }}
+          {:reply, :ok, Map.put(state, :player_two, player_id) |> Common.LobbyState.start()}
         end
 
       _ ->
@@ -111,30 +86,36 @@ defmodule ConnectFour.Lobby do
     do: {:reply, :not_turn, state}
 
   def handle_call({:move, _, column}, _from, state) do
-    if state.has_finished do
-      {:reply, :ok, state}
-    else
-      result = drop_checker(state.board, column, state.current_token)
+    result = ConnectFour.State.drop_checker(Map.get(state, :game_state), column)
 
-      if elem(result, 0) == :full do
-        {:reply, :invalid_move, state}
-      else
-        case is_over(elem(result, 1), column) do
-          {:tie, _} ->
+    case elem(result, 0) do
+      :ok ->
+        case ConnectFour.State.is_over(elem(result, 1)) do
+          :over ->
             {:reply, :ok,
-             Map.put(state, :board, elem(result, 1))
-             |> Map.put(:has_finished, true)}
+             %Common.LobbyState{
+               state
+               | :game_state => elem(result, 1),
+                 :has_finished => true,
+                 :winner => state.current_player
+             }}
 
-          {:over, _} ->
+          :tie ->
             {:reply, :ok,
-             Map.put(state, :board, elem(result, 1))
-             |> Map.put(:has_finished, true)
-             |> Map.put(:winner, state.current_player)}
+             %Common.LobbyState{
+               state
+               | :game_state => elem(result, 1),
+                 :has_finished => true,
+                 :winner => nil
+             }}
 
           _ ->
-            {:reply, elem(result, 0), Map.put(state, :board, elem(result, 1)) |> switch_player}
+            {:reply, elem(result, 0),
+             Map.put(state, :game_state, elem(result, 1)) |> switch_player}
         end
-      end
+
+      _ ->
+        {:reply, elem(result, 0), state}
     end
   end
 
@@ -142,11 +123,11 @@ defmodule ConnectFour.Lobby do
     case client_id do
       x when x == state.player_one ->
         {:reply, :player_left,
-         %ConnectFour.LobbyState{state | :player_one => nil, :has_started => false}}
+         %Common.LobbyState{state | :player_one => nil, :has_started => false}}
 
       x when x == state.player_two ->
         {:reply, :player_left,
-         %ConnectFour.LobbyState{state | :player_two => nil, :has_started => false}}
+         %Common.LobbyState{state | :player_two => nil, :has_started => false}}
 
       _ ->
         {:reply, :ok, state}
@@ -167,122 +148,15 @@ defmodule ConnectFour.Lobby do
     do: {:via, Horde.Registry, {ConnectFour.Registry, "lobby_#{lobby_id}"}}
 
   defp switch_player(state) do
-    case state.current_token do
-      :red ->
-        %ConnectFour.LobbyState{
-          state
-          | :current_token => :black,
-            :current_player => state.player_two
-        }
+    state =
+      case Map.get(state, :current_player) do
+        x when x == state.player_one ->
+          Map.put(state, :current_player, Map.get(state, :player_two))
 
-      _ ->
-        %ConnectFour.LobbyState{
-          state
-          | :current_token => :red,
-            :current_player => state.player_one
-        }
-    end
-  end
-
-  defp drop_checker(board, column, _) when column < 0 or column > @columns,
-    do: {:invalid_drop, board}
-
-  defp drop_checker(board, column, checker) do
-    row = landed_row(board, column)
-
-    cond do
-      row == 7 -> {:full, board}
-      true -> {:ok, Map.put(board, {row, column}, checker)}
-    end
-  end
-
-  defp is_over(board, column) do
-    row =
-      landed_row(board, column)
-      # minus 1 because we want the row at the time of drop
-      |> minus(1)
-
-    target_checker = Map.get(board, {row, column})
-
-    cond do
-      board
-      |> list_rows()
-      |> Enum.filter(fn x -> is_group_of_four?(x, target_checker) end)
-      |> Enum.count() > 0 ->
-        {:over, target_checker}
-
-      board
-      |> list_columns()
-      |> Enum.filter(fn x -> is_group_of_four?(x, target_checker) end)
-      |> Enum.count() > 0 ->
-        {:over, target_checker}
-
-      board
-      |> list_rows()
-      |> List.flatten()
-      |> Enum.reverse()
-      |> Enum.chunk_every(9, 9, :discard)
-      |> List.zip()
-      |> Enum.filter(fn x ->
-        is_group_of_four?(Tuple.to_list(x), target_checker)
-      end)
-      |> Enum.count() > 0 ->
-        {:over, target_checker}
-
-      board
-      |> list_rows()
-      |> List.flatten()
-      |> Enum.reverse()
-      |> Enum.chunk_every(7, 7, :discard)
-      |> List.zip()
-      |> Enum.filter(fn x ->
-        is_group_of_four?(Tuple.to_list(x), target_checker)
-      end)
-      |> Enum.count() > 0 ->
-        {:over, target_checker}
-
-      board
-      |> list_rows()
-      |> List.flatten()
-      |> Enum.filter(fn x -> x == :empty end)
-      |> Enum.count() == 0 ->
-        {:tie, nil}
-
-      true ->
-        {:ongoing, nil}
-    end
-  end
-
-  defp minus(x, y), do: x - y
-
-  defp landed_row(board, column),
-    do:
-      Enum.take_while(0..@rows, fn x -> Map.get(board, {x, column}) != :empty end)
-      |> Enum.count()
-
-  defp is_group_of_four?(row, target_checker) do
-    List.foldl(row, 0, fn entry, acc ->
-      case {entry, acc} do
-        {_, 4} -> 4
-        {^target_checker, _} -> acc + 1
-        _ -> 0
+        x when x == state.player_two ->
+          Map.put(state, :current_player, Map.get(state, :player_one))
       end
-    end) == 4
-  end
 
-  def list_rows(board) do
-    for row <- @rows..0 do
-      for column <- 0..@columns do
-        Map.get(board, {row, column})
-      end
-    end
-  end
-
-  def list_columns(board) do
-    for column <- 0..@columns do
-      for row <- @rows..0 do
-        Map.get(board, {row, column})
-      end
-    end
+    Map.put(state, :game_state, ConnectFour.State.switch_token(Map.get(state, :game_state)))
   end
 end

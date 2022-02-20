@@ -30,7 +30,7 @@ defmodule ConnectFour do
   def create(lobby_id) do
     Horde.DynamicSupervisor.start_child(
       ConnectFour.GameSupervisor,
-      {ConnectFour.Lobby, lobby_id: lobby_id}
+      {ConnectFour.Lobby, lobby_id: lobby_id, lobby_type: ConnectFour}
     )
   end
 end

@@ -51,13 +51,14 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
 
       :ok ->
         state = ConnectFour.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
+        game_state = Map.get(state, :game_state)
 
         if state.has_finished do
           if state.winner do
             Phoenix.PubSub.broadcast(
               PlankGames.PubSub,
               @topic <> "_#{Map.get(socket.assigns, :lobby_id)}",
-              {:change, "#{state.current_token} has won"}
+              {:change, "#{Map.get(game_state, :current_token)} has won"}
             )
           else
             Phoenix.PubSub.broadcast(
@@ -154,32 +155,23 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
 
   defp fetch(socket) do
     state = ConnectFour.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
+    game_state = Map.get(state, :game_state)
 
     socket
     |> assign(
       :client_count,
       ConnectFour.Presence.list(@topic <> "_#{Map.get(socket.assigns, :lobby_id)}") |> map_size
     )
-    |> assign(:board, ConnectFour.LobbyState.display(Map.get(state, :board)))
+    |> assign(:board, ConnectFour.State.list_rows(Map.get(game_state, :board)))
     |> assign(:has_finished, Map.get(state, :has_finished))
     |> assign(:has_started, Map.get(state, :has_started))
-    |> assign(:current_token, Map.get(state, :current_token))
+    |> assign(:current_token, Map.get(game_state, :current_token))
     |> assign(:winner, Map.get(state, :winner))
     |> assign(:player_token, determine_player_token(socket, state))
-    |> assign(:show_join, should_show_join?(state, Map.get(socket.assigns, :client_id)))
-  end
-
-  defp should_show_join?(state, client_id) do
-    cond do
-      Map.get(state, :player_one) == client_id || Map.get(state, :player_two) == client_id ->
-        false
-
-      Map.get(state, :has_started) ->
-        false
-
-      true ->
-        true
-    end
+    |> assign(
+      :show_join,
+      Common.LobbyState.is_joinable?(state, Map.get(socket.assigns, :client_id))
+    )
   end
 
   defp get_tailing_messages(socket), do: Enum.take(Map.get(socket.assigns, :messages), 5)
