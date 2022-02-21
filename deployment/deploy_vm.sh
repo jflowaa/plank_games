@@ -1,6 +1,7 @@
-#!/usr/bin/bash
+#!/bin/bash
 
-tar -cvzf plank_games.tar.gz -X deployment/exclude.txt ../plank_games
+cd ..
+tar -cvzf plank_games.tar.gz -X plank_games/deployment/exclude.txt plank_games
 scp plank_games.tar.gz root@plank-games:/var/www/html
 ssh plank-games "cd /var/www/html && tar -xvf plank_games.tar.gz"
 ssh plank-games "cd /var/www/html/plank_games && ./deployment/build.sh"

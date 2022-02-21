@@ -20,11 +20,14 @@
       </table>
     </div>
     <div class="column">
-      <p>Players in lobby: <%= @client_count %></p>
+      <p>Connected Users: <%= @client_count %></p>
       <%= if @show_join do %>
         <button phx-click="join" class="button-small">Join Game</button>
       <% end %>
-      <%= if @has_finished do %>
+      <%= if @is_player and not @has_finished do %>
+        <button phx-click="leave" class="button-small">Leave Game</button>
+      <% end %>
+      <%= if @is_player and @has_finished do %>
         <button phx-click="new" class="button-small">New Game</button>
       <% end %>
       <a href={"/tictactoe"}><button class="button-small">Leave Lobby</button></a>

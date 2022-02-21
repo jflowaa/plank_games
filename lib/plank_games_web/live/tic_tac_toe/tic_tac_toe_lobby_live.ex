@@ -108,7 +108,16 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
 
   @impl true
   def handle_event("new", _, socket) do
-    case TicTacToe.Lobby.new(Map.get(socket.assigns, :lobby_id)) do
+    case TicTacToe.Lobby.new(
+           Map.get(socket.assigns, :lobby_id),
+           Map.get(socket.assigns, :client_id)
+         ) do
+      :not_player ->
+        {:noreply,
+         assign(socket, :messages, [
+           "You're not a player in this game" | get_tailing_messages(socket)
+         ])}
+
       :not_finished ->
         {:noreply,
          assign(socket, :messages, ["Game is not yet finished" | get_tailing_messages(socket)])}
@@ -122,6 +131,23 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
 
         {:noreply, fetch(socket)}
     end
+  end
+
+  @impl true
+  def handle_event("leave", _, socket) do
+    if TicTacToe.Lobby.remove_client(
+         Map.get(socket.assigns, :lobby_id),
+         Map.get(socket.assigns, :client_id)
+       ) ==
+         :player_left do
+      Phoenix.PubSub.broadcast(
+        PlankGames.PubSub,
+        @topic <> "_#{Map.get(socket.assigns, :lobby_id)}",
+        {:change, "Player left, starting new game"}
+      )
+    end
+
+    {:noreply, fetch(socket)}
   end
 
   @impl true
@@ -171,6 +197,10 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
     |> assign(
       :show_join,
       Common.LobbyState.is_joinable?(state, Map.get(socket.assigns, :client_id))
+    )
+    |> assign(
+      :is_player,
+      Common.LobbyState.is_player?(state, Map.get(socket.assigns, :client_id))
     )
   end
 

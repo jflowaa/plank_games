@@ -20,7 +20,6 @@ defmodule Common.LobbyState do
       state
       | :winner => nil,
         :current_player => state.player_one,
-        :has_started => false,
         :has_finished => false
     }
 
@@ -50,6 +49,16 @@ defmodule Common.LobbyState do
 
       true ->
         true
+    end
+  end
+
+  def is_player?(state, client_id) do
+    cond do
+      Map.get(state, :player_one) == client_id || Map.get(state, :player_two) == client_id ->
+        true
+
+      true ->
+        false
     end
   end
 end

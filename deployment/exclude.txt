@@ -4,4 +4,5 @@
 */.gitignore
 */.Dockerfile
 */_build
+*/deps
 */plank_games.tar.gz

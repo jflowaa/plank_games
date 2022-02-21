@@ -18,7 +18,7 @@ defmodule TicTacToe.Lobby do
   def move(lobby_id, player_id, position),
     do: GenServer.call(via_tuple(lobby_id), {:move, player_id, position})
 
-  def new(lobby_id), do: GenServer.call(via_tuple(lobby_id), :new)
+  def new(lobby_id, client_id), do: GenServer.call(via_tuple(lobby_id), {:new, client_id})
 
   def add_client(lobby_id, client_id),
     do: GenServer.call(via_tuple(lobby_id), {:add_client, client_id})
@@ -52,11 +52,16 @@ defmodule TicTacToe.Lobby do
 
   def handle_call(:get, _from, state), do: {:reply, state, state}
 
-  def handle_call(:new, _from, state) do
-    if state.has_finished do
-      {:reply, :ok, Common.LobbyState.new(state)}
-    else
-      {:reply, :not_finished, state}
+  def handle_call({:new, client_id}, _from, state) do
+    cond do
+      not Common.LobbyState.is_player?(state, client_id) ->
+        {:reply, :not_player, state}
+
+      state.has_finished ->
+        {:reply, :ok, Common.LobbyState.new(state)}
+
+      true ->
+        {:reply, :not_finished, state}
     end
   end
 
