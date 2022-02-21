@@ -14,15 +14,16 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
       )
     end
 
-    if connected?(socket),
-      do: Phoenix.PubSub.subscribe(PlankGames.PubSub, @topic <> "_#{params["lobby_id"]}")
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(PlankGames.PubSub, "#{@topic}_#{params["lobby_id"]}")
 
-    TicTacToe.Presence.track(
-      self(),
-      @topic <> "_#{params["lobby_id"]}",
-      session["client_id"],
-      %{}
-    )
+      Common.Monitor.monitor(%Common.Monitor{
+        :game_pid => self(),
+        :client_id => session["client_id"],
+        :lobby_id => params["lobby_id"],
+        :type => :tictactoe
+      })
+    end
 
     {:ok,
      socket
@@ -57,20 +58,20 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
           if state.winner do
             Phoenix.PubSub.broadcast(
               PlankGames.PubSub,
-              @topic <> "_#{Map.get(socket.assigns, :lobby_id)}",
+              "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
               {:change, "#{Map.get(game_state, :current_token)} has won"}
             )
           else
             Phoenix.PubSub.broadcast(
               PlankGames.PubSub,
-              @topic <> "_#{Map.get(socket.assigns, :lobby_id)}",
+              "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
               {:change, "Tie game"}
             )
           end
         else
           Phoenix.PubSub.broadcast(
             PlankGames.PubSub,
-            @topic <> "_#{Map.get(socket.assigns, :lobby_id)}",
+            "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
             {:change}
           )
         end
@@ -98,7 +99,7 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
       :ok ->
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
-          @topic <> "_#{Map.get(socket.assigns, :lobby_id)}",
+          "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
           {:change, "Player joined"}
         )
 
@@ -125,7 +126,7 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
       :ok ->
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
-          @topic <> "_#{Map.get(socket.assigns, :lobby_id)}",
+          "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
           {:change, "New game starting"}
         )
 
@@ -142,7 +143,7 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
          :player_left do
       Phoenix.PubSub.broadcast(
         PlankGames.PubSub,
-        @topic <> "_#{Map.get(socket.assigns, :lobby_id)}",
+        "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
         {:change, "Player left, starting new game"}
       )
     end
@@ -157,28 +158,6 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
   @impl true
   def handle_info({:change}, socket), do: {:noreply, fetch(socket)}
 
-  @impl true
-  def handle_info(%Phoenix.Socket.Broadcast{event: "presence_diff", payload: diff}, socket) do
-    Enum.each(diff.leaves, fn {client_id, _} ->
-      if TicTacToe.Lobby.remove_client(Map.get(socket.assigns, :lobby_id), client_id) ==
-           :player_left do
-        Phoenix.PubSub.broadcast(
-          PlankGames.PubSub,
-          @topic <> "_#{Map.get(socket.assigns, :lobby_id)}",
-          {:change, "Player left, starting new game"}
-        )
-      end
-    end)
-
-    Phoenix.PubSub.broadcast(
-      PlankGames.PubSub,
-      @tictactoe_topc,
-      {:update, Map.get(socket.assigns, :lobby_id)}
-    )
-
-    {:noreply, fetch(socket)}
-  end
-
   defp fetch(socket) do
     state = TicTacToe.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
     game_state = Map.get(state, :game_state)
@@ -186,7 +165,7 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
     socket
     |> assign(
       :client_count,
-      TicTacToe.Presence.list(@topic <> "_#{Map.get(socket.assigns, :lobby_id)}") |> map_size
+      TicTacToe.Presence.list("#{@topic}_#{Map.get(socket.assigns, :lobby_id)}") |> map_size
     )
     |> assign(:board, Map.get(game_state, :board))
     |> assign(:has_finished, Map.get(state, :has_finished))

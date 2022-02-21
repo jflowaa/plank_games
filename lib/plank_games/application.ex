@@ -21,6 +21,7 @@ defmodule PlankGames.Application do
       PlankGamesWeb.Endpoint,
       # Start a worker by calling: PlankGames.Worker.start_link(arg)
       # {PlankGames.Worker, arg}
+      {Common.Monitor, []},
       TicTacToe,
       TicTacToe.Presence,
       ConnectFour,

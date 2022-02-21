@@ -125,26 +125,16 @@ defmodule ConnectFour.Lobby do
   end
 
   def handle_call({:remove_client, client_id}, _from, state) do
-    case client_id do
-      x when x == state.player_one ->
-        {:reply, :player_left,
-         %Common.LobbyState{state | :player_one => nil, :has_started => false}}
-
-      x when x == state.player_two ->
-        {:reply, :player_left,
-         %Common.LobbyState{state | :player_two => nil, :has_started => false}}
-
-      _ ->
-        {:reply, :ok, state}
-    end
+    result = Common.LobbyState.remove_client(state, client_id)
+    {:reply, elem(result, 0), elem(result, 1)}
   end
 
   def handle_info(:close, state) do
-    cond do
-      is_nil(Map.get(state, :player_one)) and is_nil(Map.get(state, :player_two)) ->
+    case Common.LobbyState.should_close?(state) do
+      true ->
         {:stop, :normal, state}
 
-      true ->
+      false ->
         {:noreply, state}
     end
   end
@@ -152,16 +142,11 @@ defmodule ConnectFour.Lobby do
   defp via_tuple(lobby_id),
     do: {:via, Horde.Registry, {ConnectFour.Registry, "lobby_#{lobby_id}"}}
 
-  defp switch_player(state) do
-    state =
-      case Map.get(state, :current_player) do
-        x when x == state.player_one ->
-          Map.put(state, :current_player, Map.get(state, :player_two))
-
-        x when x == state.player_two ->
-          Map.put(state, :current_player, Map.get(state, :player_one))
-      end
-
-    Map.put(state, :game_state, ConnectFour.State.switch_token(Map.get(state, :game_state)))
-  end
+  defp switch_player(state),
+    do:
+      Map.put(
+        Common.LobbyState.switch_player(state),
+        :game_state,
+        ConnectFour.State.switch_token(Map.get(state, :game_state))
+      )
 end

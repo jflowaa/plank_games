@@ -11,9 +11,8 @@ defmodule Common.LobbyState do
     has_finished: false
   ]
 
-  def new(lobby_id, type) do
-    %Common.LobbyState{:id => lobby_id, :type => type} |> Common.LobbyState.new()
-  end
+  def new(lobby_id, type),
+    do: %Common.LobbyState{:id => lobby_id, :type => type} |> Common.LobbyState.new()
 
   def new(state) do
     new_state = %Common.LobbyState{
@@ -29,15 +28,40 @@ defmodule Common.LobbyState do
     end
   end
 
-  def start(state) do
-    %Common.LobbyState{
+  def start(state),
+    do: %Common.LobbyState{
       state
       | :has_started => true,
         :has_finished => false,
         :winner => nil,
         :current_player => state.player_one
     }
+
+  def remove_client(state, client_id) do
+    case client_id do
+      x when x == state.player_one ->
+        {:player_left, %Common.LobbyState{state | :player_one => nil, :has_started => false}}
+
+      x when x == state.player_two ->
+        {:player_left, %Common.LobbyState{state | :player_two => nil, :has_started => false}}
+
+      _ ->
+        {:ok, state}
+    end
   end
+
+  def switch_player(state) do
+    case state.current_player do
+      x when x == state.player_one ->
+        Map.put(state, :current_player, Map.get(state, :player_two))
+
+      x when x == state.player_two ->
+        Map.put(state, :current_player, Map.get(state, :player_one))
+    end
+  end
+
+  def should_close?(state),
+    do: is_nil(Map.get(state, :player_one)) and is_nil(Map.get(state, :player_two))
 
   def is_joinable?(state, client_id) do
     cond do
@@ -52,13 +76,6 @@ defmodule Common.LobbyState do
     end
   end
 
-  def is_player?(state, client_id) do
-    cond do
-      Map.get(state, :player_one) == client_id || Map.get(state, :player_two) == client_id ->
-        true
-
-      true ->
-        false
-    end
-  end
+  def is_player?(state, client_id),
+    do: Map.get(state, :player_one) == client_id || Map.get(state, :player_two) == client_id
 end
