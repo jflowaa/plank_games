@@ -4,8 +4,6 @@ defmodule TicTacToe.Activity do
 
   def lookup(), do: GenServer.call(via_tuple(), :get)
 
-  def refresh(lobby_id), do: GenServer.call(via_tuple(), {:refresh, lobby_id})
-
   def refresh(), do: GenServer.call(via_tuple(), :refresh)
 
   def start_link(opts) do
@@ -24,15 +22,6 @@ defmodule TicTacToe.Activity do
 
   def handle_call(:refresh, _from, state), do: {:reply, state, get_lobbies()}
 
-  def handle_call({:refresh, lobby_id}, _from, state),
-    do:
-      {:reply, state,
-       Map.put(
-         state,
-         lobby_id,
-         TicTacToe.Presence.list("TicTacToe.Lobby_#{lobby_id}") |> map_size
-       )}
-
   defp via_tuple(),
     do: {:via, Horde.Registry, {TicTacToe.Registry, __MODULE__}}
 
@@ -42,14 +31,10 @@ defmodule TicTacToe.Activity do
     Enum.reduce(children, %{}, fn child, state ->
       lobby_state = :sys.get_state(elem(child, 1))
 
-      if TicTacToe.Presence.list("#{inspect(TicTacToe.Lobby)}_#{lobby_state.id}") |> map_size == 0 do
-        Process.send_after(elem(child, 1), :close, 10000)
-      end
-
       Map.put(
         state,
         lobby_state.id,
-        TicTacToe.Presence.list("#{inspect(TicTacToe.Lobby)}_#{lobby_state.id}") |> map_size
+        lobby_state.client_count
       )
     end)
   end

@@ -24,15 +24,6 @@ defmodule ConnectFour.Activity do
 
   def handle_call(:refresh, _from, state), do: {:reply, state, get_lobbies()}
 
-  def handle_call({:refresh, lobby_id}, _from, state),
-    do:
-      {:reply, state,
-       Map.put(
-         state,
-         lobby_id,
-         ConnectFour.Presence.list("ConnectFour.Lobby_#{lobby_id}") |> map_size
-       )}
-
   defp via_tuple(),
     do: {:via, Horde.Registry, {ConnectFour.Registry, __MODULE__}}
 
@@ -42,15 +33,10 @@ defmodule ConnectFour.Activity do
     Enum.reduce(children, %{}, fn child, state ->
       lobby_state = :sys.get_state(elem(child, 1))
 
-      if ConnectFour.Presence.list("#{inspect(ConnectFour.Lobby)}_#{lobby_state.id}") |> map_size ==
-           0 do
-        Process.send_after(elem(child, 1), :close, 10000)
-      end
-
       Map.put(
         state,
         lobby_state.id,
-        ConnectFour.Presence.list("#{inspect(ConnectFour.Lobby)}_#{lobby_state.id}") |> map_size
+        lobby_state.client_count
       )
     end)
   end

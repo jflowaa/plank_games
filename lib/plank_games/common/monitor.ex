@@ -25,17 +25,21 @@ defmodule Common.Monitor do
 
     case Map.get(details, :type) do
       :tictactoe ->
+        TicTacToe.Lobby.add_client(Map.get(details, :lobby_id))
+
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
           "TicTacToe.Activity",
-          {:update, Map.get(details, :lobby_id)}
+          :update
         )
 
       :connectfour ->
+        ConnectFour.Lobby.add_client(Map.get(details, :lobby_id))
+
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
           "ConnectFour.Activity",
-          {:update, Map.get(details, :lobby_id)}
+          :update
         )
     end
 
@@ -61,7 +65,7 @@ defmodule Common.Monitor do
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
           "TicTacToe.Activity",
-          {:update, Map.get(details, :lobby_id)}
+          :update
         )
 
       :connectfour ->
@@ -79,7 +83,7 @@ defmodule Common.Monitor do
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
           "ConnectFour.Activity",
-          {:update, Map.get(details, :lobby_id)}
+          :update
         )
     end
 

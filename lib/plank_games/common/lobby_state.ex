@@ -8,7 +8,8 @@ defmodule Common.LobbyState do
     :winner,
     :game_state,
     has_started: false,
-    has_finished: false
+    has_finished: false,
+    client_count: 0
   ]
 
   def new(lobby_id, type),
@@ -60,8 +61,7 @@ defmodule Common.LobbyState do
     end
   end
 
-  def should_close?(state),
-    do: is_nil(Map.get(state, :player_one)) and is_nil(Map.get(state, :player_two))
+  def should_close?(state), do: state.client_count <= 0
 
   def is_joinable?(state, client_id) do
     cond do

@@ -20,11 +20,10 @@ defmodule TicTacToe.Lobby do
 
   def new(lobby_id, client_id), do: GenServer.call(via_tuple(lobby_id), {:new, client_id})
 
-  def add_client(lobby_id, client_id),
-    do: GenServer.call(via_tuple(lobby_id), {:add_client, client_id})
-
   def remove_client(lobby_id, client_id),
     do: GenServer.call(via_tuple(lobby_id), {:remove_client, client_id})
+
+  def add_client(lobby_id), do: GenServer.call(via_tuple(lobby_id), :add_client)
 
   def start_link(opts) do
     case GenServer.start_link(__MODULE__, opts, name: via_tuple(Keyword.get(opts, :lobby_id))) do
@@ -126,8 +125,15 @@ defmodule TicTacToe.Lobby do
 
   def handle_call({:remove_client, client_id}, _from, state) do
     result = Common.LobbyState.remove_client(state, client_id)
-    {:reply, elem(result, 0), elem(result, 1)}
+
+    if state.client_count == 1, do: Process.send_after(self(), :close, 10000)
+
+    {:reply, elem(result, 0),
+     Map.put(elem(result, 1), :client_count, Map.get(state, :client_count) - 1)}
   end
+
+  def handle_call(:add_client, _from, state),
+    do: {:reply, :ok, Map.put(state, :client_count, Map.get(state, :client_count) + 1)}
 
   def handle_info(:close, state) do
     case Common.LobbyState.should_close?(state) do

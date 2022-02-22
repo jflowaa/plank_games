@@ -8,14 +8,8 @@ defmodule PlankGamesWeb.ConnectFourLive do
     if connected?(socket),
       do: Phoenix.PubSub.subscribe(PlankGames.PubSub, @topic)
 
+    ConnectFour.Activity.refresh()
     {:ok, fetch(socket) |> assign(:uuid, UUID.uuid4())}
-  end
-
-  @impl true
-  def handle_info({:update, lobby_id}, socket) do
-    ConnectFour.Activity.refresh(lobby_id)
-
-    {:noreply, fetch(socket)}
   end
 
   @impl true

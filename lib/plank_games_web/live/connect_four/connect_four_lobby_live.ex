@@ -2,17 +2,10 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
   use PlankGamesWeb, :live_view
 
   @topic inspect(ConnectFour.Lobby)
-  @connect_four_topc inspect(ConnectFour.Activity)
 
   @impl true
   def mount(params, session, socket) do
-    if ConnectFour.create(params["lobby_id"]) == {:ok} do
-      Phoenix.PubSub.broadcast(
-        PlankGames.PubSub,
-        @connect_four_topc,
-        {:update, Map.get(socket.assigns, :lobby_id)}
-      )
-    end
+    ConnectFour.create(params["lobby_id"])
 
     if connected?(socket) do
       Phoenix.PubSub.subscribe(PlankGames.PubSub, "#{@topic}_#{params["lobby_id"]}")
@@ -163,10 +156,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
     game_state = Map.get(state, :game_state)
 
     socket
-    |> assign(
-      :client_count,
-      ConnectFour.Presence.list("#{@topic}_#{Map.get(socket.assigns, :lobby_id)}") |> map_size
-    )
+    |> assign(:client_count, Map.get(state, :client_count))
     |> assign(:board, ConnectFour.State.list_rows(Map.get(game_state, :board)))
     |> assign(:has_finished, Map.get(state, :has_finished))
     |> assign(:has_started, Map.get(state, :has_started))

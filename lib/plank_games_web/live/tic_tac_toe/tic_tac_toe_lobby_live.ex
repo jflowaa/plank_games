@@ -2,17 +2,10 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
   use PlankGamesWeb, :live_view
 
   @topic inspect(TicTacToe.Lobby)
-  @tictactoe_topc inspect(TicTacToe.Activity)
 
   @impl true
   def mount(params, session, socket) do
-    if TicTacToe.create(params["lobby_id"]) == {:ok} do
-      Phoenix.PubSub.broadcast(
-        PlankGames.PubSub,
-        @tictactoe_topc,
-        {:update, Map.get(socket.assigns, :lobby_id)}
-      )
-    end
+    TicTacToe.create(params["lobby_id"])
 
     if connected?(socket) do
       Phoenix.PubSub.subscribe(PlankGames.PubSub, "#{@topic}_#{params["lobby_id"]}")
@@ -163,10 +156,7 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
     game_state = Map.get(state, :game_state)
 
     socket
-    |> assign(
-      :client_count,
-      TicTacToe.Presence.list("#{@topic}_#{Map.get(socket.assigns, :lobby_id)}") |> map_size
-    )
+    |> assign(:client_count, Map.get(state, :client_count))
     |> assign(:board, Map.get(game_state, :board))
     |> assign(:has_finished, Map.get(state, :has_finished))
     |> assign(:has_started, Map.get(state, :has_started))

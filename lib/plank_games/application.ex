@@ -23,9 +23,7 @@ defmodule PlankGames.Application do
       # {PlankGames.Worker, arg}
       {Common.Monitor, []},
       TicTacToe,
-      TicTacToe.Presence,
-      ConnectFour,
-      ConnectFour.Presence
+      ConnectFour
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
