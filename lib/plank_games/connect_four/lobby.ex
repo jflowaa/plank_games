@@ -66,23 +66,23 @@ defmodule ConnectFour.Lobby do
   end
 
   def handle_call({:join, player_id}, _from, state) do
-    case state do
-      %{:player_one => val} when is_nil(val) ->
-        if player_id == state.player_two do
-          {:reply, :already_joined, state}
-        else
-          {:reply, :ok, Map.put(state, :player_one, player_id)}
-        end
-
-      %{:player_two => val} when is_nil(val) ->
-        if player_id == state.player_one do
-          {:reply, :already_joined, state}
-        else
-          {:reply, :ok, Map.put(state, :player_two, player_id) |> Common.LobbyState.start()}
-        end
-
-      _ ->
+    cond do
+      Enum.count(state.players) >= 2 ->
         {:reply, :full, state}
+
+      Enum.any?(state.players, fn x -> x == player_id end) ->
+        {:reply, :already_joined, state}
+
+      true ->
+        state = Map.put(state, :players, state.players ++ [player_id])
+
+        case Enum.count(state.players) do
+          2 ->
+            {:reply, :ok, state |> Common.LobbyState.start()}
+
+          _ ->
+            {:reply, :ok, state}
+        end
     end
   end
 

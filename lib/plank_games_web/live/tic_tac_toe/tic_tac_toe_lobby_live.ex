@@ -200,9 +200,14 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
 
   defp determine_player_token(socket, state) do
     cond do
-      Map.get(socket.assigns, :client_id) == Map.get(state, :player_one) -> "x"
-      Map.get(socket.assigns, :client_id) == Map.get(state, :player_two) -> "o"
-      true -> nil
+      Enum.find_index(state.players, fn x -> x == Map.get(socket.assigns, :client_id) end) == 0 ->
+        "x"
+
+      Enum.find_index(state.players, fn x -> x == Map.get(socket.assigns, :client_id) end) == 1 ->
+        "o"
+
+      true ->
+        nil
     end
   end
 end

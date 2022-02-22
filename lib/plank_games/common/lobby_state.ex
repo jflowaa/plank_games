@@ -2,11 +2,10 @@ defmodule Common.LobbyState do
   defstruct [
     :id,
     :type,
-    :player_one,
-    :player_two,
     :current_player,
     :winner,
     :game_state,
+    players: [],
     has_started: false,
     has_finished: false,
     client_count: 0
@@ -16,12 +15,13 @@ defmodule Common.LobbyState do
     do: %Common.LobbyState{:id => lobby_id, :type => type} |> Common.LobbyState.new()
 
   def new(state) do
-    new_state = %Common.LobbyState{
-      state
-      | :winner => nil,
-        :current_player => state.player_one,
-        :has_finished => false
-    }
+    new_state =
+      %Common.LobbyState{
+        state
+        | :winner => nil,
+          :has_finished => false
+      }
+      |> shuffle_players()
 
     case Map.get(state, :type) do
       :tictactoe -> Map.put(new_state, :game_state, %TicTacToe.State{})
@@ -29,35 +29,40 @@ defmodule Common.LobbyState do
     end
   end
 
-  def start(state),
-    do: %Common.LobbyState{
+  def start(state) do
+    %Common.LobbyState{
       state
       | :has_started => true,
         :has_finished => false,
-        :winner => nil,
-        :current_player => state.player_one
+        :winner => nil
     }
+    |> shuffle_players()
+  end
 
   def remove_client(state, client_id) do
-    case client_id do
-      x when x == state.player_one ->
-        {:player_left, %Common.LobbyState{state | :player_one => nil, :has_started => false}}
+    case Enum.any?(state.players, fn x -> x == client_id end) do
+      true ->
+        {:player_left,
+         %Common.LobbyState{
+           state
+           | :players => Enum.filter(state.players, fn x -> x != client_id end),
+             :has_started => false
+         }}
 
-      x when x == state.player_two ->
-        {:player_left, %Common.LobbyState{state | :player_two => nil, :has_started => false}}
-
-      _ ->
+      false ->
         {:ok, state}
     end
   end
 
   def switch_player(state) do
-    case state.current_player do
-      x when x == state.player_one ->
-        Map.put(state, :current_player, Map.get(state, :player_two))
+    player_index = Enum.find_index(state.players, fn x -> x == state.current_player end)
 
-      x when x == state.player_two ->
-        Map.put(state, :current_player, Map.get(state, :player_one))
+    cond do
+      player_index == Enum.count(state.players) - 1 ->
+        Map.put(state, :current_player, Enum.at(state.players, 0))
+
+      true ->
+        Map.put(state, :current_player, Enum.at(state.players, player_index + 1))
     end
   end
 
@@ -65,7 +70,7 @@ defmodule Common.LobbyState do
 
   def is_joinable?(state, client_id) do
     cond do
-      Map.get(state, :player_one) == client_id || Map.get(state, :player_two) == client_id ->
+      is_player?(state, client_id) ->
         false
 
       Map.get(state, :has_started) ->
@@ -76,6 +81,15 @@ defmodule Common.LobbyState do
     end
   end
 
-  def is_player?(state, client_id),
-    do: Map.get(state, :player_one) == client_id || Map.get(state, :player_two) == client_id
+  def is_player?(state, client_id), do: Enum.any?(state.players, fn x -> x == client_id end)
+
+  defp shuffle_players(state) do
+    shuffled_players = Enum.shuffle(state.players)
+
+    %Common.LobbyState{
+      state
+      | :players => shuffled_players,
+        :current_player => Enum.at(shuffled_players, 0)
+    }
+  end
 end
