@@ -129,7 +129,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
 
   @impl true
   def handle_event("leave", _, socket) do
-    if ConnectFour.Lobby.remove_client(
+    if ConnectFour.Lobby.remove_player(
          Map.get(socket.assigns, :lobby_id),
          Map.get(socket.assigns, :client_id)
        ) ==

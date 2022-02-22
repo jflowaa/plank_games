@@ -129,7 +129,7 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
 
   @impl true
   def handle_event("leave", _, socket) do
-    if TicTacToe.Lobby.remove_client(
+    if TicTacToe.Lobby.remove_player(
          Map.get(socket.assigns, :lobby_id),
          Map.get(socket.assigns, :client_id)
        ) ==
@@ -191,7 +191,7 @@ defmodule PlankGamesWeb.TicTacToeLobbyLive do
 
   def draw_svg_cross(assigns \\ %{}) do
     ~H"""
-      <line x1="25%"" y1="25%" x2="75%", y2="75%" stroke="black" stroke-width="8"/>
+      <line x1="25%" y1="25%" x2="75%", y2="75%" stroke="black" stroke-width="8"/>
       <line x1="75%" y1="25%" x2="25%", y2="75%" stroke="black" stroke-width="8"/>
     """
   end

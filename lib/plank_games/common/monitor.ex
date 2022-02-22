@@ -51,7 +51,7 @@ defmodule Common.Monitor do
 
     case Map.get(details, :type) do
       :tictactoe ->
-        if TicTacToe.Lobby.remove_client(
+        if TicTacToe.Lobby.remove_player(
              Map.get(details, :lobby_id),
              Map.get(details, :client_id)
            ) == :player_left do
@@ -62,6 +62,8 @@ defmodule Common.Monitor do
           )
         end
 
+        TicTacToe.Lobby.remove_client(Map.get(details, :lobby_id))
+
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
           "TicTacToe.Activity",
@@ -69,7 +71,7 @@ defmodule Common.Monitor do
         )
 
       :connectfour ->
-        if ConnectFour.Lobby.remove_client(
+        if ConnectFour.Lobby.remove_player(
              Map.get(details, :lobby_id),
              Map.get(details, :client_id)
            ) == :player_left do
@@ -79,6 +81,8 @@ defmodule Common.Monitor do
             {:change, "Player left, starting new game"}
           )
         end
+
+        ConnectFour.Lobby.remove_client(Map.get(details, :lobby_id))
 
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,

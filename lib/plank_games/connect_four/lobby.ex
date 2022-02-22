@@ -20,8 +20,11 @@ defmodule ConnectFour.Lobby do
 
   def new(lobby_id, client_id), do: GenServer.call(via_tuple(lobby_id), {:new, client_id})
 
-  def remove_client(lobby_id, client_id),
-    do: GenServer.call(via_tuple(lobby_id), {:remove_client, client_id})
+  def remove_player(lobby_id, client_id),
+    do: GenServer.call(via_tuple(lobby_id), {:remove_player, client_id})
+
+  def remove_client(lobby_id),
+    do: GenServer.call(via_tuple(lobby_id), :remove_client)
 
   def add_client(lobby_id), do: GenServer.call(via_tuple(lobby_id), :add_client)
 
@@ -126,13 +129,16 @@ defmodule ConnectFour.Lobby do
     end
   end
 
-  def handle_call({:remove_client, client_id}, _from, state) do
+  def handle_call({:remove_player, client_id}, _from, state) do
     result = Common.LobbyState.remove_client(state, client_id)
 
+    {:reply, elem(result, 0), elem(result, 1)}
+  end
+
+  def handle_call(:remove_client, _from, state) do
     if state.client_count == 1, do: Process.send_after(self(), :close, 10000)
 
-    {:reply, elem(result, 0),
-     Map.put(elem(result, 1), :client_count, Map.get(state, :client_count) - 1)}
+    {:reply, :ok, Map.put(state, :client_count, Map.get(state, :client_count) - 1)}
   end
 
   def handle_call(:add_client, _from, state),
