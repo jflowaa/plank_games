@@ -13,27 +13,63 @@ defmodule Yahtzee.Scorecard do
   ]
   @yahtzee_bonus 100
 
-  defstruct ones: 0,
-            twos: 0,
-            threes: 0,
-            fours: 0,
-            fives: 0,
-            sixes: 0,
-            upper_section_bonus: 0,
+  defstruct ones: nil,
+            twos: nil,
+            threes: nil,
+            fours: nil,
+            fives: nil,
+            sixes: nil,
+            upper_section_bonus: nil,
             upper_section: 0,
-            three_of_kind: 0,
-            four_of_kind: 0,
-            full_house: 0,
-            small_straight: 0,
-            large_straight: 0,
-            chance: 0,
-            yahtzee: 0,
+            three_of_kind: nil,
+            four_of_kind: nil,
+            full_house: nil,
+            small_straight: nil,
+            large_straight: nil,
+            chance: nil,
+            yahtzee: nil,
             yahtzee_bonus: 0,
             lower_section: 0,
             grand_total: 0
 
   def compute_total(scorecard) do
     scorecard |> upper_total() |> lower_total() |> grand_total()
+  end
+
+  def valid_category?(category),
+    do: Enum.any?(@upper_section ++ @lower_section, fn x -> x == category end)
+
+  def score_category(scorecard, category, dice) do
+    cond do
+      Enum.any?(@upper_section, fn x -> x == category end) ->
+        compute_upper_section_category(
+          scorecard,
+          category,
+          dice,
+          Enum.find_index(@upper_section, fn x -> x == category end) + 1
+        )
+
+      Enum.any?(@lower_section, fn x -> x == category end) ->
+        scorecard
+
+      true ->
+        Map.put(scorecard, category, 0)
+    end
+  end
+
+  def is_complete?(scorecard),
+    do: Enum.all?(Map.to_list(scorecard), fn x -> not is_nil(elem(x, 1)) end)
+
+  defp compute_upper_section_category(scorecard, category, dice, target) do
+    Map.put(
+      scorecard,
+      category,
+      Enum.reduce(
+        Enum.filter(Map.values(dice), fn value -> Map.get(value, :value) == target end),
+        0,
+        &(Map.get(&1, :value) + &2)
+      )
+    )
   end
 
   defp upper_total(scorecard) do

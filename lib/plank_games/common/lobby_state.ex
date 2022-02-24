@@ -26,6 +26,7 @@ defmodule Common.LobbyState do
     case Map.get(state, :type) do
       :tictactoe -> Map.put(new_state, :game_state, %TicTacToe.State{})
       :connectfour -> Map.put(new_state, :game_state, %ConnectFour.State{})
+      :yahtzee -> Map.put(new_state, :game_state, %Yahtzee.State{})
     end
   end
 

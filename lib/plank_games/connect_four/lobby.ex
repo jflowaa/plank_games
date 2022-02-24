@@ -43,16 +43,6 @@ defmodule ConnectFour.Lobby do
     {:ok, Common.LobbyState.new(Keyword.get(args, :lobby_id), :connectfour)}
   end
 
-  def terminate(_, state) do
-    if state.has_started do
-      Redix.noreply_command(:redix, [
-        "SET",
-        Map.get(state, :id),
-        :erlang.term_to_binary(state)
-      ])
-    end
-  end
-
   def handle_call(:get, _from, state), do: {:reply, state, state}
 
   def handle_call({:new, client_id}, _from, state) do

@@ -40,15 +40,6 @@ defmodule TicTacToe.Lobby do
 
   def init(args) do
     Process.flag(:trap_exit, true)
-
-    # case Redix.command(:redix, ["GET", Keyword.get(args, :lobby_id)]) do
-    #   {:ok, x} when not is_nil(x) ->
-    #     {:ok, :erlang.binary_to_term(x)}
-
-    #   _ ->
-    #  {:ok, Common.LobbyState.new(Keyword.get(args, :lobby_id), TicTacToe)}
-    # end
-
     {:ok, Common.LobbyState.new(Keyword.get(args, :lobby_id), :tictactoe)}
   end
 
