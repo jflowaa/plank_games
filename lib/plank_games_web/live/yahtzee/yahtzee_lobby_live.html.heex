@@ -1,0 +1,28 @@
+<div>
+  <div class="row">
+    <div class="column column-75">
+    idk
+    </div>
+    <div class="column">
+      <p>Connected Users: <%= @client_count %></p>
+      <%= if @show_join do %>
+        <button phx-click="join" class="button-small">Join Game</button>
+      <% end %>
+      <%= if @is_player and not @has_finished do %>
+        <button phx-click="leave" class="button-small">Leave Game</button>
+      <% end %>
+      <%= if @is_player and @has_finished do %>
+        <button phx-click="new" class="button-small">New Game</button>
+      <% end %>
+      <a href={"/yahtzee"}><button class="button-small">Leave Lobby</button></a>
+      <%= if @has_started do %>
+        <h4>Current Turn: todo player id alias</h4>
+      <% end %>
+      <div class="message-box">
+        <%= for message <- @messages do %>
+          <span><%= message %></span><br/>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

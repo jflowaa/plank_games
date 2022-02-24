@@ -41,6 +41,15 @@ defmodule Common.Monitor do
           "ConnectFour.Activity",
           :update
         )
+
+      :yahtzee ->
+        Yahtzee.Lobby.add_client(Map.get(details, :lobby_id))
+
+        Phoenix.PubSub.broadcast(
+          PlankGames.PubSub,
+          "Yahtzee.Activity",
+          :update
+        )
     end
 
     {:reply, :ok, Map.put(state, Map.get(details, :game_pid), new_details)}
@@ -87,6 +96,26 @@ defmodule Common.Monitor do
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
           "ConnectFour.Activity",
+          :update
+        )
+
+      :yahtzee ->
+        if Yahtzee.Lobby.remove_player(
+             Map.get(details, :lobby_id),
+             Map.get(details, :client_id)
+           ) == :player_left do
+          Phoenix.PubSub.broadcast(
+            PlankGames.PubSub,
+            "Yahtzee.Lobby_#{Map.get(details, :lobby_id)}",
+            {:change, "Player left, starting new game"}
+          )
+        end
+
+        Yahtzee.Lobby.remove_client(Map.get(details, :lobby_id))
+
+        Phoenix.PubSub.broadcast(
+          PlankGames.PubSub,
+          "Yahtzee.Activity",
           :update
         )
     end

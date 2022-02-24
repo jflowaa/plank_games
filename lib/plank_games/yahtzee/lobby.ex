@@ -75,7 +75,7 @@ defmodule Yahtzee.Lobby do
         {:reply, :already_joined, state}
 
       true ->
-        {:reply,
+        {:reply, :ok,
          state
          |> Map.put(:players, state.players ++ [player_id])
          |> Map.put(:game_state, Yahtzee.State.add_player(state.game_state, player_id))}
@@ -95,7 +95,8 @@ defmodule Yahtzee.Lobby do
 
     case elem(result, 0) do
       :ok ->
-        {:reply, elem(result, 0), Map.put(state, :game_state, elem(result, 1)) |> switch_player}
+        {:reply, elem(result, 0),
+         Map.put(state, :game_state, elem(result, 1)) |> Common.LobbyState.switch_player()}
 
       _ ->
         {:reply, elem(result, 0), state}
@@ -141,7 +142,7 @@ defmodule Yahtzee.Lobby do
 
     case elem(result, 0) do
       :player_left ->
-        {:replay, :player_left,
+        {:reply, :player_left,
          elem(result, 1)
          |> Map.put(:game_state, Yahtzee.State.remove_player(state.game_state, player_id))}
 
@@ -170,13 +171,5 @@ defmodule Yahtzee.Lobby do
   end
 
   defp via_tuple(lobby_id),
-    do: {:via, Horde.Registry, {ConnectFour.Registry, "lobby_#{lobby_id}"}}
-
-  defp switch_player(state),
-    do:
-      Map.put(
-        Common.LobbyState.switch_player(state),
-        :game_state,
-        ConnectFour.State.switch_token(Map.get(state, :game_state))
-      )
+    do: {:via, Horde.Registry, {Yahtzee.Registry, "lobby_#{lobby_id}"}}
 end
