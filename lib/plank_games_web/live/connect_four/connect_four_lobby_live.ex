@@ -12,7 +12,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
 
       Common.Monitor.monitor(%Common.Monitor{
         :game_pid => self(),
-        :client_id => session["client_id"],
+        :player_id => session["player_id"],
         :lobby_id => params["lobby_id"],
         :type => :connectfour
       })
@@ -20,7 +20,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
 
     {:ok,
      socket
-     |> assign(:client_id, session["client_id"])
+     |> assign(:player_id, session["player_id"])
      |> assign(:lobby_id, params["lobby_id"])
      |> assign(:messages, ["Joined lobby"])
      |> fetch}
@@ -30,7 +30,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
   def handle_event("move", %{"position" => position}, socket) do
     case ConnectFour.Lobby.move(
            Map.get(socket.assigns, :lobby_id),
-           Map.get(socket.assigns, :client_id),
+           Map.get(socket.assigns, :player_id),
            String.to_integer(position)
          ) do
       :not_started ->
@@ -77,7 +77,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
   def handle_event("join", _, socket) do
     case ConnectFour.Lobby.join(
            Map.get(socket.assigns, :lobby_id),
-           Map.get(socket.assigns, :client_id)
+           Map.get(socket.assigns, :player_id)
          ) do
       :full ->
         {:noreply,
@@ -104,7 +104,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
   def handle_event("new", _, socket) do
     case ConnectFour.Lobby.new(
            Map.get(socket.assigns, :lobby_id),
-           Map.get(socket.assigns, :client_id)
+           Map.get(socket.assigns, :player_id)
          ) do
       :not_player ->
         {:noreply,
@@ -131,7 +131,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
   def handle_event("leave", _, socket) do
     if ConnectFour.Lobby.remove_player(
          Map.get(socket.assigns, :lobby_id),
-         Map.get(socket.assigns, :client_id)
+         Map.get(socket.assigns, :player_id)
        ) ==
          :player_left do
       Phoenix.PubSub.broadcast(
@@ -156,7 +156,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
     game_state = Map.get(state, :game_state)
 
     socket
-    |> assign(:client_count, Map.get(state, :client_count))
+    |> assign(:connection_count, Map.get(state, :connection_count))
     |> assign(:board, ConnectFour.State.list_rows(Map.get(game_state, :board)))
     |> assign(:has_finished, Map.get(state, :has_finished))
     |> assign(:has_started, Map.get(state, :has_started))
@@ -165,11 +165,11 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
     |> assign(:player_token, determine_player_token(socket, state))
     |> assign(
       :show_join,
-      Common.LobbyState.is_joinable?(state, Map.get(socket.assigns, :client_id))
+      Common.LobbyState.is_joinable?(state, Map.get(socket.assigns, :player_id))
     )
     |> assign(
       :is_player,
-      Common.LobbyState.is_player?(state, Map.get(socket.assigns, :client_id))
+      Common.LobbyState.is_player?(state, Map.get(socket.assigns, :player_id))
     )
   end
 
@@ -177,10 +177,10 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
 
   defp determine_player_token(socket, state) do
     cond do
-      Enum.find_index(state.players, fn x -> x == Map.get(socket.assigns, :client_id) end) == 0 ->
+      Enum.find_index(state.players, fn x -> x.id == Map.get(socket.assigns, :player_id) end) == 0 ->
         "red"
 
-      Enum.find_index(state.players, fn x -> x == Map.get(socket.assigns, :client_id) end) == 1 ->
+      Enum.find_index(state.players, fn x -> x.id == Map.get(socket.assigns, :player_id) end) == 1 ->
         "black"
 
       true ->

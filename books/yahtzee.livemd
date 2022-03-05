@@ -127,7 +127,7 @@ defmodule Yahtzee.State do
             scorecards: %{},
             roll_count: 0
 
-  def add_player(state, player_id) do
+  def add_scorecard(state, player_id) do
     Map.put(state, :scorecards, Map.put(state.scorecards, player_id, %Yahtzee.Scorecard{}))
   end
 
@@ -232,7 +232,7 @@ end
 
 ```elixir
 state = %Yahtzee.State{}
-state = Yahtzee.State.add_player(state, "me")
+state = Yahtzee.State.add_scorecard(state, "me")
 result = Yahtzee.State.roll_dice(state)
 result = Yahtzee.State.end_turn(elem(result, 1), "me", :ones)
 result = Yahtzee.State.end_turn(elem(result, 1), "me", :threes)

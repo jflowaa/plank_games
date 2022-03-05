@@ -8,7 +8,7 @@ defmodule PlankGamesWeb.Router do
     plug :put_root_layout, {PlankGamesWeb.LayoutView, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug :add_client_id
+    plug :add_player_id
   end
 
   pipeline :api do
@@ -60,9 +60,9 @@ defmodule PlankGamesWeb.Router do
     end
   end
 
-  def add_client_id(conn, _opts) do
-    if is_nil(get_session(conn, :client_id)) do
-      put_session(conn, :client_id, UUID.uuid4())
+  def add_player_id(conn, _opts) do
+    if is_nil(get_session(conn, :player_id)) do
+      put_session(conn, :player_id, UUID.uuid4())
     else
       conn
     end

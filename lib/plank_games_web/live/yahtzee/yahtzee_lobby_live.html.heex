@@ -1,22 +1,45 @@
 <div>
   <div class="row">
     <div class="column column-75">
-    idk
+    <%= if @scorecard do %>
+      <div>
+        Dice
+        <%= render_dice(@dice) %>
+      </div>
+      <div>
+        Scorecard
+        <table>
+          <thead>
+          <th>Category</th>
+          <th>Score</th>
+          </thead>
+          <tbody>
+            <%= render_upper_section(@scorecard) %>
+          </tbody>
+        </table>
+      </div>
+      <% end %>
     </div>
     <div class="column">
-      <p>Connected Users: <%= @client_count %></p>
+      <p>Connected Users: <%= @connection_count %></p>
       <%= if @show_join do %>
         <button phx-click="join" class="button-small">Join Game</button>
       <% end %>
       <%= if @is_player and not @has_finished do %>
         <button phx-click="leave" class="button-small">Leave Game</button>
       <% end %>
+      <%= if @is_player and not @has_started do %>
+        <button phx-click="start" class="button-small">Start Game</button>
+      <% end %>
       <%= if @is_player and @has_finished do %>
         <button phx-click="new" class="button-small">New Game</button>
       <% end %>
       <a href={"/yahtzee"}><button class="button-small">Leave Lobby</button></a>
+      <%= if @player_name do %>
+        <h4>Player Name: <%= @player_name %></h4>
+      <% end %>
       <%= if @has_started do %>
-        <h4>Current Turn: todo player id alias</h4>
+        <h4>Current Turn: <%= @current_player %></h4>
       <% end %>
       <div class="message-box">
         <%= for message <- @messages do %>

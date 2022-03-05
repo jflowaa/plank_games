@@ -4,7 +4,7 @@ defmodule Common.Monitor do
   defstruct [
     :game_pid,
     :type,
-    :client_id,
+    :player_id,
     :lobby_id,
     :ref
   ]
@@ -25,7 +25,7 @@ defmodule Common.Monitor do
 
     case Map.get(details, :type) do
       :tictactoe ->
-        TicTacToe.Lobby.add_client(Map.get(details, :lobby_id))
+        TicTacToe.Lobby.add_player(Map.get(details, :lobby_id))
 
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
@@ -34,7 +34,7 @@ defmodule Common.Monitor do
         )
 
       :connectfour ->
-        ConnectFour.Lobby.add_client(Map.get(details, :lobby_id))
+        ConnectFour.Lobby.add_player(Map.get(details, :lobby_id))
 
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
@@ -43,7 +43,7 @@ defmodule Common.Monitor do
         )
 
       :yahtzee ->
-        Yahtzee.Lobby.add_client(Map.get(details, :lobby_id))
+        Yahtzee.Lobby.add_player(Map.get(details, :lobby_id))
 
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
@@ -62,7 +62,7 @@ defmodule Common.Monitor do
       :tictactoe ->
         if TicTacToe.Lobby.remove_player(
              Map.get(details, :lobby_id),
-             Map.get(details, :client_id)
+             Map.get(details, :player_id)
            ) == :player_left do
           Phoenix.PubSub.broadcast(
             PlankGames.PubSub,
@@ -71,7 +71,7 @@ defmodule Common.Monitor do
           )
         end
 
-        TicTacToe.Lobby.remove_client(Map.get(details, :lobby_id))
+        TicTacToe.Lobby.remove_player(Map.get(details, :lobby_id))
 
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
@@ -82,7 +82,7 @@ defmodule Common.Monitor do
       :connectfour ->
         if ConnectFour.Lobby.remove_player(
              Map.get(details, :lobby_id),
-             Map.get(details, :client_id)
+             Map.get(details, :player_id)
            ) == :player_left do
           Phoenix.PubSub.broadcast(
             PlankGames.PubSub,
@@ -91,7 +91,7 @@ defmodule Common.Monitor do
           )
         end
 
-        ConnectFour.Lobby.remove_client(Map.get(details, :lobby_id))
+        ConnectFour.Lobby.remove_player(Map.get(details, :lobby_id))
 
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
@@ -102,7 +102,7 @@ defmodule Common.Monitor do
       :yahtzee ->
         if Yahtzee.Lobby.remove_player(
              Map.get(details, :lobby_id),
-             Map.get(details, :client_id)
+             Map.get(details, :player_id)
            ) == :player_left do
           Phoenix.PubSub.broadcast(
             PlankGames.PubSub,
@@ -111,7 +111,7 @@ defmodule Common.Monitor do
           )
         end
 
-        Yahtzee.Lobby.remove_client(Map.get(details, :lobby_id))
+        Yahtzee.Lobby.remove_player(Map.get(details, :lobby_id))
 
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,

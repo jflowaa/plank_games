@@ -8,7 +8,7 @@ defmodule Common.LobbyState do
     players: [],
     has_started: false,
     has_finished: false,
-    client_count: 0
+    connection_count: 0
   ]
 
   def new(lobby_id, type),
@@ -40,13 +40,29 @@ defmodule Common.LobbyState do
     |> shuffle_players()
   end
 
-  def remove_client(state, client_id) do
-    case Enum.any?(state.players, fn x -> x == client_id end) do
+  def add_player(state, player_id) do
+    player_count = Enum.count(Map.get(state, :players))
+
+    Map.put(
+      state,
+      :players,
+      state.players ++
+        [
+          %{
+            :name => "Player#{player_count + 1}",
+            :id => player_id
+          }
+        ]
+    )
+  end
+
+  def remove_player(state, player_id) do
+    case Enum.any?(state.players, fn x -> x.id == player_id end) do
       true ->
         {:player_left,
          %Common.LobbyState{
            state
-           | :players => Enum.filter(state.players, fn x -> x != client_id end),
+           | :players => Enum.filter(state.players, fn x -> x.id != player_id end),
              :has_started => false
          }}
 
@@ -56,7 +72,7 @@ defmodule Common.LobbyState do
   end
 
   def switch_player(state) do
-    player_index = Enum.find_index(state.players, fn x -> x == state.current_player end)
+    player_index = Enum.find_index(state.players, fn x -> x.id == state.current_player.id end)
 
     cond do
       player_index == Enum.count(state.players) - 1 ->
@@ -67,11 +83,11 @@ defmodule Common.LobbyState do
     end
   end
 
-  def should_close?(state), do: state.client_count <= 0
+  def should_close?(state), do: state.connection_count <= 0
 
-  def is_joinable?(state, client_id) do
+  def is_joinable?(state, player_id) do
     cond do
-      is_player?(state, client_id) ->
+      is_player?(state, player_id) ->
         false
 
       Map.get(state, :has_started) ->
@@ -82,7 +98,7 @@ defmodule Common.LobbyState do
     end
   end
 
-  def is_player?(state, client_id), do: Enum.any?(state.players, fn x -> x == client_id end)
+  def is_player?(state, player_id), do: Enum.any?(state.players, fn x -> x.id == player_id end)
 
   defp shuffle_players(state) do
     shuffled_players = Enum.shuffle(state.players)

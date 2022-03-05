@@ -34,7 +34,7 @@ defmodule TicTacToe.Activity do
       Map.put(
         state,
         lobby_state.id,
-        lobby_state.client_count
+        lobby_state.connection_count
       )
     end)
   end

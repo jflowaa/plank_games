@@ -18,15 +18,15 @@ defmodule TicTacToe.Lobby do
   def move(lobby_id, player_id, position),
     do: GenServer.call(via_tuple(lobby_id), {:move, player_id, position})
 
-  def new(lobby_id, client_id), do: GenServer.call(via_tuple(lobby_id), {:new, client_id})
+  def new(lobby_id, player_id), do: GenServer.call(via_tuple(lobby_id), {:new, player_id})
 
-  def remove_player(lobby_id, client_id),
-    do: GenServer.call(via_tuple(lobby_id), {:remove_player, client_id})
+  def remove_player(lobby_id, player_id),
+    do: GenServer.call(via_tuple(lobby_id), {:remove_player, player_id})
 
-  def remove_client(lobby_id),
-    do: GenServer.call(via_tuple(lobby_id), :remove_client)
+  def remove_player(lobby_id),
+    do: GenServer.call(via_tuple(lobby_id), :remove_player)
 
-  def add_client(lobby_id), do: GenServer.call(via_tuple(lobby_id), :add_client)
+  def add_player(lobby_id), do: GenServer.call(via_tuple(lobby_id), :add_player)
 
   def start_link(opts) do
     case GenServer.start_link(__MODULE__, opts, name: via_tuple(Keyword.get(opts, :lobby_id))) do
@@ -45,9 +45,9 @@ defmodule TicTacToe.Lobby do
 
   def handle_call(:get, _from, state), do: {:reply, state, state}
 
-  def handle_call({:new, client_id}, _from, state) do
+  def handle_call({:new, player_id}, _from, state) do
     cond do
-      not Common.LobbyState.is_player?(state, client_id) ->
+      not Common.LobbyState.is_player?(state, player_id) ->
         {:reply, :not_player, state}
 
       state.has_finished ->
@@ -63,15 +63,15 @@ defmodule TicTacToe.Lobby do
       Enum.count(state.players) >= 2 ->
         {:reply, :full, state}
 
-      Enum.any?(state.players, fn x -> x == player_id end) ->
+      Enum.any?(state.players, fn x -> x.id == player_id end) ->
         {:reply, :already_joined, state}
 
       true ->
-        state = Map.put(state, :players, state.players ++ [player_id])
+        state = Common.LobbyState.add_player(state, player_id)
 
         case Enum.count(state.players) do
           2 ->
-            {:reply, :ok, state |> Common.LobbyState.start()}
+            {:reply, :ok, Common.LobbyState.start(state)}
 
           _ ->
             {:reply, :ok, state}
@@ -82,7 +82,7 @@ defmodule TicTacToe.Lobby do
   def handle_call({:move, _, _}, _from, state) when not state.has_started or state.has_finished,
     do: {:reply, :not_started, state}
 
-  def handle_call({:move, player_id, _}, _from, state) when state.current_player != player_id,
+  def handle_call({:move, player_id, _}, _from, state) when state.current_player.id != player_id,
     do: {:reply, :not_turn, state}
 
   def handle_call({:move, _, position}, _from, state) do
@@ -117,20 +117,20 @@ defmodule TicTacToe.Lobby do
     end
   end
 
-  def handle_call({:remove_player, client_id}, _from, state) do
-    result = Common.LobbyState.remove_client(state, client_id)
+  def handle_call({:remove_player, player_id}, _from, state) do
+    result = Common.LobbyState.remove_player(state, player_id)
 
     {:reply, elem(result, 0), elem(result, 1)}
   end
 
-  def handle_call(:remove_client, _from, state) do
-    if state.client_count == 1, do: Process.send_after(self(), :close, 10000)
+  def handle_call(:remove_player, _from, state) do
+    if state.connection_count == 1, do: Process.send_after(self(), :close, 10000)
 
-    {:reply, :ok, Map.put(state, :client_count, Map.get(state, :client_count) - 1)}
+    {:reply, :ok, Map.put(state, :connection_count, Map.get(state, :connection_count) - 1)}
   end
 
-  def handle_call(:add_client, _from, state),
-    do: {:reply, :ok, Map.put(state, :client_count, Map.get(state, :client_count) + 1)}
+  def handle_call(:add_player, _from, state),
+    do: {:reply, :ok, Map.put(state, :connection_count, Map.get(state, :connection_count) + 1)}
 
   def handle_info(:close, state) do
     case Common.LobbyState.should_close?(state) do

@@ -60,6 +60,8 @@ defmodule Yahtzee.Scorecard do
   def is_complete?(scorecard),
     do: Enum.all?(Map.to_list(scorecard), fn x -> not is_nil(elem(x, 1)) end)
 
+  def get_upper_section(), do: @upper_section
+
   defp compute_upper_section_category(scorecard, category, dice, target) do
     Map.put(
       scorecard,

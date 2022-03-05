@@ -5,13 +5,11 @@ defmodule Yahtzee.State do
             scorecards: %{},
             roll_count: 0
 
-  def add_player(state, player_id) do
-    Map.put(state, :scorecards, Map.put(state.scorecards, player_id, %Yahtzee.Scorecard{}))
-  end
+  def add_scorecard(state, player_id),
+    do: Map.put(state, :scorecards, Map.put(state.scorecards, player_id, %Yahtzee.Scorecard{}))
 
-  def remove_player(state, player_id) do
-    Map.put(state, :scorecards, elem(Map.pop(state.scorecards, player_id), 1))
-  end
+  def remove_scorecard(state, player_id),
+    do: Map.put(state, :scorecards, elem(Map.pop(state.scorecards, player_id), 1))
 
   def compute_player_totals(state) do
     case Enum.all?(Map.to_list(state.scorecards), fn x ->
