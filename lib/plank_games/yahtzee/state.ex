@@ -61,11 +61,7 @@ defmodule Yahtzee.State do
              )
            )
          )
-         |> Map.put(:roll_count, 0)
-         |> Map.put(
-           :dice,
-           for(i <- 1..@dice_per_hand, into: %{}, do: {i, %{value: nil, hold: false}})
-         )}
+         |> Map.put(:roll_count, 0)}
     end
   end
 

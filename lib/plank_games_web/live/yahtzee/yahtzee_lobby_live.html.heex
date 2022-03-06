@@ -1,24 +1,12 @@
 <div>
   <div class="row">
     <div class="column column-75">
-    <%= if not is_nil(@scorecard) and @has_started do %>
-      <div>
-        Dice
-        <%= render_dice(@dice, @is_player) %>
-      </div>
-      <div>
-        Scorecard
-        <table>
-          <thead>
-            <th>Category</th>
-            <th>Score</th>
-          </thead>
-          <tbody>
-            <%= render_upper_section(@scorecard) %>
-          </tbody>
-        </table>
-      </div>
+    <%= if @has_started do %>
+      <.live_component module={PlankGamesWeb.DiceLiveComponent} id="dice" is_player={@is_player} dice={@dice} roll_count={@roll_count} />
+      <%= for scorecard <- @scorecards do %>
+      <.live_component module={PlankGamesWeb.ScorecardLiveComponent} id={"scorecard-#{elem(scorecard, 0)}"} scorecard={scorecard} />
       <% end %>
+    <% end %>
     </div>
     <div class="column">
       <p>Connected Users: <%= @connection_count %></p>

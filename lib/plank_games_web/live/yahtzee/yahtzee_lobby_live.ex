@@ -215,7 +215,7 @@ defmodule PlankGamesWeb.YahtzeeLobbyLive do
   @impl true
   def handle_info({:change}, socket), do: {:noreply, fetch(socket)}
 
-  defp fetch(socket) do
+  def fetch(socket) do
     state = Yahtzee.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
     game_state = Map.get(state, :game_state)
 
@@ -224,13 +224,10 @@ defmodule PlankGamesWeb.YahtzeeLobbyLive do
 
     socket
     |> assign(:connection_count, Map.get(state, :connection_count))
-    |> assign(:game_state, game_state)
+    |> assign(:roll_count, Map.get(game_state, :roll_count))
     |> assign(:has_finished, Map.get(state, :has_finished))
     |> assign(:has_started, Map.get(state, :has_started))
-    |> assign(
-      :scorecard,
-      Map.get(Map.get(game_state, :scorecards), Map.get(socket.assigns, :player_id))
-    )
+    |> assign(:scorecards, Map.get(game_state, :scorecards))
     |> assign(:dice, Map.get(game_state, :dice))
     |> assign(
       :player_name,
@@ -256,33 +253,5 @@ defmodule PlankGamesWeb.YahtzeeLobbyLive do
     )
   end
 
-  def render_dice(dice, is_player, assigns \\ %{}) do
-    ~H"""
-      <%= if is_player do %>
-        <button phx-click="roll" class="button-small">roll</button>
-      <% end %>
-      <%= for die <- dice do %>
-        <div>
-          Value: <%= Map.get(elem(die, 1), :value) %>
-          Held: <%= Map.get(elem(die, 1), :hold) %>
-          <button phx-click={if Map.get(elem(die, 1), :hold), do: "release", else: "hold"} phx-value-die={"#{elem(die, 0)}"} class="button-small">
-            <%= if Map.get(elem(die, 1), :hold), do: "Release", else: "Hold" %>
-          </button>
-        </div>
-      <% end %>
-    """
-  end
-
-  def render_upper_section(scorecard, assigns \\ %{}) do
-    ~H"""
-      <%= for category <- Yahtzee.Scorecard.get_upper_section() do %>
-        <tr>
-          <td><%= "#{category}" |> String.replace("_", " ") |> :string.titlecase() %></td>
-          <td phx-click="end_turn" phx-value-category={"#{category}"}><%= Map.get(scorecard, category) %></td>
-        </tr>
-      <% end %>
-    """
-  end
-
-  defp get_tailing_messages(socket), do: Enum.take(Map.get(socket.assigns, :messages), 5)
+  def get_tailing_messages(socket), do: Enum.take(Map.get(socket.assigns, :messages), 5)
 end
