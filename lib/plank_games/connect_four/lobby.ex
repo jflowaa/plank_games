@@ -126,7 +126,7 @@ defmodule ConnectFour.Lobby do
   end
 
   def handle_call(:remove_player, _from, state) do
-    if state.connection_count == 1, do: Process.send_after(self(), :close, 10000)
+    if state.connection_count <= 1, do: Process.send_after(self(), :close, 10000)
 
     {:reply, :ok, Map.put(state, :connection_count, Map.get(state, :connection_count) - 1)}
   end
