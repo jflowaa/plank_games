@@ -40,8 +40,11 @@ defmodule Yahtzee.State do
       is_nil(Map.get(state.scorecards, player_id)) ->
         {:invalid_player, state}
 
-      is_nil(Map.get(Map.get(state.scorecards, player_id), category)) ->
+      not is_nil(Map.get(Map.get(state.scorecards, player_id), category)) ->
         {:category_set, state}
+
+      Map.get(state, :roll_count) == 0 ->
+        {:not_rolled, state}
 
       true ->
         {:ok,
@@ -58,7 +61,11 @@ defmodule Yahtzee.State do
              )
            )
          )
-         |> Map.put(:roll_count, 0)}
+         |> Map.put(:roll_count, 0)
+         |> Map.put(
+           :dice,
+           for(i <- 1..@dice_per_hand, into: %{}, do: {i, %{value: nil, hold: false}})
+         )}
     end
   end
 

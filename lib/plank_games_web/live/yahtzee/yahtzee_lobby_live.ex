@@ -167,6 +167,48 @@ defmodule PlankGamesWeb.YahtzeeLobbyLive do
   end
 
   @impl true
+  def handle_event("end_turn", %{"category" => category}, socket) do
+    case Yahtzee.Lobby.end_turn(
+           Map.get(socket.assigns, :lobby_id),
+           Map.get(socket.assigns, :player_id),
+           String.to_atom(category)
+         ) do
+      :invalid_category ->
+        {:noreply,
+         assign(socket, :messages, [
+           "Invalid category" | get_tailing_messages(socket)
+         ])}
+
+      :invalid_player ->
+        {:noreply,
+         assign(socket, :messages, [
+           "Not your turn" | get_tailing_messages(socket)
+         ])}
+
+      :category_set ->
+        {:noreply,
+         assign(socket, :messages, [
+           "Category already set" | get_tailing_messages(socket)
+         ])}
+
+      :not_rolled ->
+        {:noreply,
+         assign(socket, :messages, [
+           "Roll first before setting a category" | get_tailing_messages(socket)
+         ])}
+
+      :ok ->
+        Phoenix.PubSub.broadcast(
+          PlankGames.PubSub,
+          "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
+          {:change}
+        )
+
+        {:noreply, fetch(socket)}
+    end
+  end
+
+  @impl true
   def handle_info({:change, message}, socket),
     do: {:noreply, fetch(socket) |> assign(:messages, [message | get_tailing_messages(socket)])}
 
@@ -214,17 +256,19 @@ defmodule PlankGamesWeb.YahtzeeLobbyLive do
     )
   end
 
-  def render_dice(dice, assigns \\ %{}) do
+  def render_dice(dice, is_player, assigns \\ %{}) do
     ~H"""
-      <button phx-click="roll" class="button-small">roll</button>
+      <%= if is_player do %>
+        <button phx-click="roll" class="button-small">roll</button>
+      <% end %>
       <%= for die <- dice do %>
-        <p phx-click={case Map.get(elem(die, 1), :hold) do
-          true -> "hold"
-          false -> "release"
-        end} phx-value-die={"#{elem(die, 0)}"}>
+        <div>
           Value: <%= Map.get(elem(die, 1), :value) %>
           Held: <%= Map.get(elem(die, 1), :hold) %>
-        </p>
+          <button phx-click={if Map.get(elem(die, 1), :hold), do: "release", else: "hold"} phx-value-die={"#{elem(die, 0)}"} class="button-small">
+            <%= if Map.get(elem(die, 1), :hold), do: "Release", else: "Hold" %>
+          </button>
+        </div>
       <% end %>
     """
   end
@@ -232,9 +276,9 @@ defmodule PlankGamesWeb.YahtzeeLobbyLive do
   def render_upper_section(scorecard, assigns \\ %{}) do
     ~H"""
       <%= for category <- Yahtzee.Scorecard.get_upper_section() do %>
-        <tr phx-click="score" phx-value-position={"#{category}"}>
+        <tr>
           <td><%= "#{category}" |> String.replace("_", " ") |> :string.titlecase() %></td>
-          <td><%= Map.get(scorecard, category) %></td>
+          <td phx-click="end_turn" phx-value-category={"#{category}"}><%= Map.get(scorecard, category) %></td>
         </tr>
       <% end %>
     """

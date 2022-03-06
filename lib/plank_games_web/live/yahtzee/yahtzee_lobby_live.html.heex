@@ -1,17 +1,17 @@
 <div>
   <div class="row">
     <div class="column column-75">
-    <%= if @scorecard do %>
+    <%= if not is_nil(@scorecard) and @has_started do %>
       <div>
         Dice
-        <%= render_dice(@dice) %>
+        <%= render_dice(@dice, @is_player) %>
       </div>
       <div>
         Scorecard
         <table>
           <thead>
-          <th>Category</th>
-          <th>Score</th>
+            <th>Category</th>
+            <th>Score</th>
           </thead>
           <tbody>
             <%= render_upper_section(@scorecard) %>

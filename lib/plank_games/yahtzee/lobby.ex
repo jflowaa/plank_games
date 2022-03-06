@@ -117,25 +117,25 @@ defmodule Yahtzee.Lobby do
   def handle_call({:hold_die, _, die}, _from, state),
     do: {:reply, :ok, Map.put(state, :game_state, Yahtzee.State.hold_die(state.game_state, die))}
 
-  def handle_call({:relase_die, _, _}, _from, state)
+  def handle_call({:release_die, _, _}, _from, state)
       when not state.has_started or state.has_finished,
       do: {:reply, :not_started, state}
 
-  def handle_call({:relase_die, player_id, _}, _from, state)
+  def handle_call({:release_die, player_id, _}, _from, state)
       when state.current_player.id != player_id,
       do: {:reply, :not_turn, state}
 
-  def handle_call({:relase_die, _, die}, _from, state) when die < 1 or die > 5,
+  def handle_call({:release_die, _, die}, _from, state) when die < 1 or die > 5,
     do: {:reply, :invalid_die, state}
 
-  def handle_call({:relase_die, _, die}, _from, state),
+  def handle_call({:release_die, _, die}, _from, state),
     do:
       {:reply, :ok, Map.put(state, :game_state, Yahtzee.State.release_die(state.game_state, die))}
 
   def handle_call({:end_turn, player_id, category}, _from, state) do
-    result = Yahtzee.State.end_turn(state.scorecard, player_id, category)
+    result = Yahtzee.State.end_turn(state.game_state, player_id, category)
 
-    {:reply, elem(result, 0), elem(result, 1)}
+    {:reply, elem(result, 0), Map.put(state, :game_state, elem(result, 1))}
   end
 
   def handle_call({:remove_player, player_id}, _from, state) do
