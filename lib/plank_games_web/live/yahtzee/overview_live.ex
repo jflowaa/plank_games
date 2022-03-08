@@ -1,4 +1,4 @@
-defmodule PlankGamesWeb.YahtzeeLive do
+defmodule PlankGamesWeb.Yahtzee.OverviewLive do
   use PlankGamesWeb, :live_view
 
   @topic inspect(Yahtzee.Activity)

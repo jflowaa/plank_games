@@ -135,7 +135,14 @@ defmodule Yahtzee.Lobby do
   def handle_call({:end_turn, player_id, category}, _from, state) do
     result = Yahtzee.State.end_turn(state.game_state, player_id, category)
 
-    {:reply, elem(result, 0), Map.put(state, :game_state, elem(result, 1))}
+    case elem(result, 0) do
+      :ok ->
+        {:reply, elem(result, 0),
+         Map.put(state, :game_state, Yahtzee.State.compute_player_totals(elem(result, 1)))}
+
+      _ ->
+        {:reply, elem(result, 0), Map.put(state, :game_state, elem(result, 1))}
+    end
   end
 
   def handle_call({:remove_player, player_id}, _from, state) do

@@ -23,8 +23,8 @@ defmodule PlankGamesWeb.Router do
     live "/tictactoe/:lobby_id", TicTacToeLobbyLive, :index
     live "/connectfour", ConnectFourLive, :index
     live "/connectfour/:lobby_id", ConnectFourLobbyLive, :index
-    live "/yahtzee", YahtzeeLive, :index
-    live "/yahtzee/:lobby_id", YahtzeeLobbyLive, :index
+    live "/yahtzee", Yahtzee.OverviewLive, :index
+    live "/yahtzee/:lobby_id", Yahtzee.LobbyLive, :index
   end
 
   # Other scopes may use custom stacks.

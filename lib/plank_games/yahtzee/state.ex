@@ -12,24 +12,15 @@ defmodule Yahtzee.State do
     do: Map.put(state, :scorecards, elem(Map.pop(state.scorecards, player_id), 1))
 
   def compute_player_totals(state) do
-    case Enum.all?(Map.to_list(state.scorecards), fn x ->
-           Yahtzee.Scorecard.is_complete?(elem(x, 1))
-         end) do
-      true ->
-        {:ok,
-         Map.put(
-           state,
-           :scorecards,
-           for(
-             x <- Map.to_list(state.scorecards),
-             into: %{player_id: %Yahtzee.Scorecard{}},
-             do: {elem(x, 0), Yahtzee.Scorecard.compute_total(elem(x, 1))}
-           )
-         )}
-
-      false ->
-        {:not_finished, state}
-    end
+    Map.put(
+      state,
+      :scorecards,
+      for(
+        x <- Map.to_list(state.scorecards),
+        into: %{},
+        do: {elem(x, 0), Yahtzee.Scorecard.compute_total(elem(x, 1))}
+      )
+    )
   end
 
   def end_turn(state, player_id, category) do
@@ -61,7 +52,11 @@ defmodule Yahtzee.State do
              )
            )
          )
-         |> Map.put(:roll_count, 0)}
+         |> Map.put(:roll_count, 0)
+         |> Map.put(
+           :dice,
+           for({k, v} <- Map.get(state, :dice), into: %{}, do: {k, Map.put(v, :hold, false)})
+         )}
     end
   end
 
@@ -86,7 +81,7 @@ defmodule Yahtzee.State do
   end
 
   def hold_die(state, die) do
-    if is_nil(Map.get(Map.get(state.dice, die), :value)) do
+    if is_nil(Map.get(Map.get(state.dice, die), :value)) or Map.get(state, :roll_count) == 0 do
       state
     else
       Map.put(

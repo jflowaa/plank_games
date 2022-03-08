@@ -19,7 +19,7 @@ defmodule Yahtzee.Scorecard do
             fours: nil,
             fives: nil,
             sixes: nil,
-            upper_section_bonus: nil,
+            upper_section_bonus: 0,
             upper_section: 0,
             three_of_kind: nil,
             four_of_kind: nil,
@@ -62,6 +62,8 @@ defmodule Yahtzee.Scorecard do
 
   def get_upper_section(), do: @upper_section
 
+  def get_lower_section(), do: @lower_section
+
   defp compute_upper_section_category(scorecard, category, dice, target) do
     Map.put(
       scorecard,
@@ -75,7 +77,12 @@ defmodule Yahtzee.Scorecard do
   end
 
   defp upper_total(scorecard) do
-    total = Enum.reduce(Map.values(Map.take(scorecard, @upper_section)), 0, &(&1 + &2))
+    total =
+      Enum.reduce(
+        Map.values(Map.take(scorecard, @upper_section)),
+        0,
+        &if(is_nil(&1), do: 0 + &2, else: &1 + &2)
+      )
 
     if total > @upper_section_bonus_threshold do
       Map.put(
@@ -93,7 +100,11 @@ defmodule Yahtzee.Scorecard do
       scorecard,
       :lower_section,
       @yahtzee_bonus * Map.get(scorecard, :yahtzee_bonus) +
-        Enum.reduce(Map.values(Map.take(scorecard, @lower_section)), 0, &(&1 + &2))
+        Enum.reduce(
+          Map.values(Map.take(scorecard, @lower_section)),
+          0,
+          &if(is_nil(&1), do: 0 + &2, else: &1 + &2)
+        )
     )
   end
 

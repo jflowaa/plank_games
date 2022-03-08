@@ -1,4 +1,4 @@
-defmodule PlankGamesWeb.YahtzeeLobbyLive do
+defmodule PlankGamesWeb.Yahtzee.LobbyLive do
   use PlankGamesWeb, :live_view
 
   @topic inspect(Yahtzee.Lobby)
@@ -24,52 +24,6 @@ defmodule PlankGamesWeb.YahtzeeLobbyLive do
      |> assign(:lobby_id, params["lobby_id"])
      |> assign(:messages, ["Joined lobby"])
      |> fetch}
-  end
-
-  @impl true
-  def handle_event("roll", _, socket) do
-    case Yahtzee.Lobby.roll(
-           Map.get(socket.assigns, :lobby_id),
-           Map.get(socket.assigns, :player_id)
-         ) do
-      :not_started ->
-        {:noreply,
-         assign(socket, :messages, ["Game is not started" | get_tailing_messages(socket)])}
-
-      :not_turn ->
-        {:noreply, assign(socket, :messages, ["Not your turn" | get_tailing_messages(socket)])}
-
-      :max_rolls ->
-        {:noreply, assign(socket, :messages, ["Max rolls" | get_tailing_messages(socket)])}
-
-      :ok ->
-        state = Yahtzee.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
-        game_state = Map.get(state, :game_state)
-
-        if state.has_finished do
-          if state.winner do
-            Phoenix.PubSub.broadcast(
-              PlankGames.PubSub,
-              "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
-              {:change, "#{Map.get(game_state, :current_token)} has won"}
-            )
-          else
-            Phoenix.PubSub.broadcast(
-              PlankGames.PubSub,
-              "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
-              {:change, "Tie game"}
-            )
-          end
-        else
-          Phoenix.PubSub.broadcast(
-            PlankGames.PubSub,
-            "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
-            {:change}
-          )
-        end
-
-        {:noreply, fetch(socket)}
-    end
   end
 
   @impl true
@@ -164,6 +118,60 @@ defmodule PlankGamesWeb.YahtzeeLobbyLive do
     )
 
     {:noreply, fetch(socket)}
+  end
+
+  @impl true
+  def handle_event("roll", _, socket) do
+    case Yahtzee.Lobby.roll(
+           Map.get(socket.assigns, :lobby_id),
+           Map.get(socket.assigns, :player_id)
+         ) do
+      :not_started ->
+        {:noreply,
+         assign(socket, :messages, [
+           "Game is not started" | get_tailing_messages(socket)
+         ])}
+
+      :not_turn ->
+        {:noreply,
+         assign(socket, :messages, [
+           "Not your turn" | get_tailing_messages(socket)
+         ])}
+
+      :max_rolls ->
+        {:noreply,
+         assign(socket, :messages, [
+           "Max rolls" | get_tailing_messages(socket)
+         ])}
+
+      :ok ->
+        state = Yahtzee.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
+        game_state = Map.get(state, :game_state)
+
+        if state.has_finished do
+          if state.winner do
+            Phoenix.PubSub.broadcast(
+              PlankGames.PubSub,
+              "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
+              {:change, "#{Map.get(game_state, :current_token)} has won"}
+            )
+          else
+            Phoenix.PubSub.broadcast(
+              PlankGames.PubSub,
+              "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
+              {:change, "Tie game"}
+            )
+          end
+        else
+          Phoenix.PubSub.broadcast(
+            PlankGames.PubSub,
+            "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
+            {:change}
+          )
+        end
+
+        {:noreply, fetch(socket)}
+    end
   end
 
   @impl true
