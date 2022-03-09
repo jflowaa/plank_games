@@ -50,7 +50,60 @@ defmodule Yahtzee.Scorecard do
         )
 
       Enum.any?(@lower_section, fn x -> x == category end) ->
-        scorecard
+        case category do
+          :chance ->
+            Map.put(
+              scorecard,
+              category,
+              Enum.reduce(Map.values(dice), 0, &(Map.get(&1, :value) + &2))
+            )
+
+          :three_of_kind ->
+            if is_x_of_kind?(dice, 3) do
+              Map.put(
+                scorecard,
+                category,
+                Enum.reduce(Map.values(dice), 0, &(Map.get(&1, :value) + &2))
+              )
+            else
+              Map.put(scorecard, category, 0)
+            end
+
+          :four_of_kind ->
+            if is_x_of_kind?(dice, 4) do
+              Map.put(
+                scorecard,
+                category,
+                Enum.reduce(Map.values(dice), 0, &(Map.get(&1, :value) + &2))
+              )
+            else
+              Map.put(scorecard, category, 0)
+            end
+
+          :yahtzee ->
+            if is_x_of_kind?(dice, 4) do
+              Map.put(scorecard, category, 50)
+            else
+              Map.put(scorecard, category, 0)
+            end
+
+          :small_straight ->
+            if is_straight?(dice, 4) do
+              Map.put(scorecard, category, 30)
+            else
+              Map.put(scorecard, category, 0)
+            end
+
+          :large_straight ->
+            if is_straight?(dice, 5) do
+              Map.put(scorecard, category, 40)
+            else
+              Map.put(scorecard, category, 0)
+            end
+
+          _ ->
+            scorecard
+        end
 
       true ->
         Map.put(scorecard, category, 0)
@@ -114,5 +167,23 @@ defmodule Yahtzee.Scorecard do
       :grand_total,
       Map.get(scorecard, :upper_section) + Map.get(scorecard, :lower_section)
     )
+  end
+
+  defp is_x_of_kind?(dice, count),
+    do:
+      Enum.any?(Enum.frequencies_by(Map.values(dice), fn x -> Map.get(x, :value) end), fn x ->
+        elem(x, 1) > count
+      end)
+
+  defp is_straight?(dice, count) do
+    (Map.values(dice) ++ [%{value: 0}])
+    |> Enum.map(fn x -> Map.get(x, :value) end)
+    |> Enum.sort_by(fn x -> x end)
+    |> Enum.chunk_every(2)
+    |> Enum.take_while(fn x ->
+      Enum.at(x, 0) == Enum.at(x, 1) - 1
+    end)
+    |> List.flatten()
+    |> Enum.count(fn x -> x != 0 end) > count - 1
   end
 end
