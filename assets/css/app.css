@@ -4,6 +4,7 @@
 @import "./tic_tac_toe.css";
 @import "./connect_four.css";
 @import "./lobby.css";
+@import "./dice.min.css";
 
 /* Alerts and form errors used by phx.new */
 .alert {
