@@ -30,8 +30,6 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  config :redix, config: [host: System.get_env("REDIS_HOST") || "localhost"]
-
   # ## Using releases
   #
   # If you are doing OTP releases, you need to instruct Phoenix

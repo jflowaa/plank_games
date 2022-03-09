@@ -1,11 +1,11 @@
-defmodule PlankGamesWeb.ConnectFourLobbyLive do
+defmodule PlankGamesWeb.TicTacToe.LobbyLive do
   use PlankGamesWeb, :live_view
 
-  @topic inspect(ConnectFour.Lobby)
+  @topic inspect(TicTacToe.Lobby)
 
   @impl true
   def mount(params, session, socket) do
-    ConnectFour.create(params["lobby_id"])
+    TicTacToe.create(params["lobby_id"])
 
     if connected?(socket) do
       Phoenix.PubSub.subscribe(PlankGames.PubSub, "#{@topic}_#{params["lobby_id"]}")
@@ -14,7 +14,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
         :game_pid => self(),
         :player_id => session["player_id"],
         :lobby_id => params["lobby_id"],
-        :type => :connectfour
+        :type => :tictactoe
       })
     end
 
@@ -28,7 +28,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
 
   @impl true
   def handle_event("move", %{"position" => position}, socket) do
-    case ConnectFour.Lobby.move(
+    case TicTacToe.Lobby.move(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :player_id),
            String.to_integer(position)
@@ -44,7 +44,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
         {:noreply, assign(socket, :messages, ["Not your turn" | get_tailing_messages(socket)])}
 
       :ok ->
-        state = ConnectFour.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
+        state = TicTacToe.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
         game_state = Map.get(state, :game_state)
 
         if state.has_finished do
@@ -75,7 +75,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
 
   @impl true
   def handle_event("join", _, socket) do
-    case ConnectFour.Lobby.join(
+    case TicTacToe.Lobby.join(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :player_id)
          ) do
@@ -102,7 +102,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
 
   @impl true
   def handle_event("new", _, socket) do
-    case ConnectFour.Lobby.new(
+    case TicTacToe.Lobby.new(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :player_id)
          ) do
@@ -129,7 +129,7 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
 
   @impl true
   def handle_event("leave", _, socket) do
-    if ConnectFour.Lobby.remove_player(
+    if TicTacToe.Lobby.remove_player(
          Map.get(socket.assigns, :lobby_id),
          Map.get(socket.assigns, :player_id)
        ) ==
@@ -152,12 +152,12 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
   def handle_info({:change}, socket), do: {:noreply, fetch(socket)}
 
   defp fetch(socket) do
-    state = ConnectFour.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
+    state = TicTacToe.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
     game_state = Map.get(state, :game_state)
 
     socket
     |> assign(:connection_count, Map.get(state, :connection_count))
-    |> assign(:board, ConnectFour.State.list_rows(Map.get(game_state, :board)))
+    |> assign(:board, Map.get(game_state, :board))
     |> assign(:has_finished, Map.get(state, :has_finished))
     |> assign(:has_started, Map.get(state, :has_started))
     |> assign(:current_token, Map.get(game_state, :current_token))
@@ -173,15 +173,38 @@ defmodule PlankGamesWeb.ConnectFourLobbyLive do
     )
   end
 
+  def render_square(%{position: position, board: board}, assigns \\ %{}) do
+    ~H"""
+    <td phx-click="move" phx-value-position={"#{position}"}>
+      <svg width="100%" height="100%" preserveAspectRatio="none">
+          <%= case Enum.at(board, position) do %>
+            <% "x" -> %>
+              <%= draw_svg_cross() %>
+            <% "o" -> %>
+              <circle cx="50%" cy="50%" r="25%" stroke="black" stroke-width="8" fill="white" fill-opacity="0.0"/>
+            <% _ -> %>
+          <% end %>
+      </svg>
+    </td>
+    """
+  end
+
+  def draw_svg_cross(assigns \\ %{}) do
+    ~H"""
+      <line x1="25%" y1="25%" x2="75%", y2="75%" stroke="black" stroke-width="8"/>
+      <line x1="75%" y1="25%" x2="25%", y2="75%" stroke="black" stroke-width="8"/>
+    """
+  end
+
   defp get_tailing_messages(socket), do: Enum.take(Map.get(socket.assigns, :messages), 5)
 
   defp determine_player_token(socket, state) do
     cond do
       Enum.find_index(state.players, fn x -> x.id == Map.get(socket.assigns, :player_id) end) == 0 ->
-        "red"
+        "x"
 
       Enum.find_index(state.players, fn x -> x.id == Map.get(socket.assigns, :player_id) end) == 1 ->
-        "black"
+        "o"
 
       true ->
         nil

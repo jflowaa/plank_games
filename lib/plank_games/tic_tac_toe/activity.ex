@@ -2,12 +2,12 @@ defmodule TicTacToe.Activity do
   use GenServer
   require Logger
 
-  def lookup(), do: GenServer.call(via_tuple(), :get)
+  def lookup(), do: GenServer.call(GenServer.whereis({:global, __MODULE__}), :get)
 
-  def refresh(), do: GenServer.call(via_tuple(), :refresh)
+  def refresh(), do: GenServer.call(GenServer.whereis({:global, __MODULE__}), :refresh)
 
   def start_link(opts) do
-    case GenServer.start_link(__MODULE__, opts, name: via_tuple()) do
+    case GenServer.start_link(__MODULE__, opts, name: {:global, __MODULE__}) do
       {:ok, pid} ->
         {:ok, pid}
 
@@ -22,11 +22,8 @@ defmodule TicTacToe.Activity do
 
   def handle_call(:refresh, _from, state), do: {:reply, state, get_lobbies()}
 
-  defp via_tuple(),
-    do: {:via, Horde.Registry, {TicTacToe.Registry, __MODULE__}}
-
   defp get_lobbies() do
-    children = Supervisor.which_children(TicTacToe.GameSupervisor)
+    children = Supervisor.which_children(TicTacToe.LobbySupervisor)
 
     Enum.reduce(children, %{}, fn child, state ->
       lobby_state = :sys.get_state(elem(child, 1))

@@ -145,7 +145,7 @@ defmodule ConnectFour.Lobby do
   end
 
   defp via_tuple(lobby_id),
-    do: {:via, Horde.Registry, {ConnectFour.Registry, "lobby_#{lobby_id}"}}
+    do: {:via, Registry, {ConnectFour.LobbyRegistry, "lobby_#{lobby_id}"}}
 
   defp switch_player(state),
     do:

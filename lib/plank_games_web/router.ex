@@ -19,10 +19,10 @@ defmodule PlankGamesWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
-    live "/tictactoe", TicTacToeLive, :index
-    live "/tictactoe/:lobby_id", TicTacToeLobbyLive, :index
-    live "/connectfour", ConnectFourLive, :index
-    live "/connectfour/:lobby_id", ConnectFourLobbyLive, :index
+    live "/tictactoe", TicTacToe.OverviewLive, :index
+    live "/tictactoe/:lobby_id", TicTacToe.LobbyLive, :index
+    live "/connectfour", ConnectFour.OverviewLive, :index
+    live "/connectfour/:lobby_id", ConnectFour.LobbyLive, :index
     live "/yahtzee", Yahtzee.OverviewLive, :index
     live "/yahtzee/:lobby_id", Yahtzee.LobbyLive, :index
   end

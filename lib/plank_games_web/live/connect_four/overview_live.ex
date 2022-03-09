@@ -1,4 +1,4 @@
-defmodule PlankGamesWeb.ConnectFourLive do
+defmodule PlankGamesWeb.ConnectFour.OverviewLive do
   use PlankGamesWeb, :live_view
 
   @topic inspect(ConnectorFour.Activity)

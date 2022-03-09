@@ -37,11 +37,7 @@
       <%= if @has_started do %>
         <h4>Current Turn: <%= @current_token %></h4>
       <% end %>
-      <div class="message-box">
-        <%= for message <- @messages do %>
-          <span><%= message %></span><br/>
-        <% end %>
-      </div>
+      <.live_component module={PlankGamesWeb.Common.MessageLiveComponent} id="message" messages={@messages} />
     </div>
   </div>
 </div>

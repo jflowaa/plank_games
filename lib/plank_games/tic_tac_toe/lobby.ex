@@ -143,7 +143,7 @@ defmodule TicTacToe.Lobby do
   end
 
   defp via_tuple(lobby_id),
-    do: {:via, Horde.Registry, {TicTacToe.Registry, "lobby_#{lobby_id}"}}
+    do: {:via, Registry, {TicTacToe.LobbyRegistry, "lobby_#{lobby_id}"}}
 
   defp switch_player(state),
     do:

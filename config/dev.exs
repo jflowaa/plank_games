@@ -54,8 +54,6 @@ config :plank_games, PlankGamesWeb.Endpoint,
     ]
   ]
 
-config :redix, config: [host: "localhost"]
-
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 

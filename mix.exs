@@ -42,15 +42,13 @@ defmodule PlankGames.MixProject do
       {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
       {:telemetry_metrics, "~> 0.6"},
-      {:telemetry, "~> 1.0", override: true},
-      {:telemetry_poller, "~> 1.0", override: true},
+      {:telemetry, "~> 1.0"},
+      {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:horde, "0.8.4"},
-      {:uuid, "1.1.8"},
-      # {:libcluster, "3.3.0"},
-      {:redix, "1.1.4"}
+      {:uuid, "1.1.8"}
+      # {:libcluster, "3.3.0"}
     ]
   end
 

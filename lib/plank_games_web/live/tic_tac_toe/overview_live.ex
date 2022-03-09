@@ -1,4 +1,4 @@
-defmodule PlankGamesWeb.TicTacToeLive do
+defmodule PlankGamesWeb.TicTacToe.OverviewLive do
   use PlankGamesWeb, :live_view
 
   @topic inspect(TicTacToe.Activity)

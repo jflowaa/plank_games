@@ -179,5 +179,5 @@ defmodule Yahtzee.Lobby do
   end
 
   defp via_tuple(lobby_id),
-    do: {:via, Horde.Registry, {Yahtzee.Registry, "lobby_#{lobby_id}"}}
+    do: {:via, Registry, {Yahtzee.LobbyRegistry, "lobby_#{lobby_id}"}}
 end

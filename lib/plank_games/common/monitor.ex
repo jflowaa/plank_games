@@ -12,8 +12,14 @@ defmodule Common.Monitor do
   def monitor(details),
     do: GenServer.call(GenServer.whereis({:global, __MODULE__}), {:monitor, details})
 
-  def start_link(init_arg) do
-    GenServer.start_link(__MODULE__, init_arg, name: {:global, __MODULE__})
+  def start_link(opts) do
+    case GenServer.start_link(__MODULE__, opts, name: {:global, __MODULE__}) do
+      {:ok, pid} ->
+        {:ok, pid}
+
+      {:error, {:already_started, _}} ->
+        :ignore
+    end
   end
 
   def init(_) do
