@@ -202,7 +202,7 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
       :not_rolled ->
         {:noreply,
          assign(socket, :messages, [
-           "Roll first before setting a category" | get_tailing_messages(socket)
+           "Roll first before scoring a category" | get_tailing_messages(socket)
          ])}
 
       :ok ->

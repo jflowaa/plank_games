@@ -4,9 +4,11 @@
       <div class="w-full">
         <%= if @has_started do %>
           <.live_component module={PlankGamesWeb.Yahtzee.DiceLiveComponent} id="dice" player_id={@player_id} lobby_id={@lobby_id} is_player={@is_player} dice={@dice} roll_count={@roll_count} />
-          <%= for scorecard <- @scorecards do %>
-          <.live_component module={PlankGamesWeb.Yahtzee.ScorecardLiveComponent} id={"scorecard-#{elem(scorecard, 0)}"} scorecard={scorecard} />
-          <% end %>
+          <div class="grid md:grid-cols-2">
+            <%= for scorecard <- @scorecards do %>
+            <.live_component module={PlankGamesWeb.Yahtzee.ScorecardLiveComponent} id={"scorecard-#{elem(scorecard, 0)}"} scorecard={scorecard} />
+            <% end %>
+          </div>
         <% end %>
       </div>
     </div>
