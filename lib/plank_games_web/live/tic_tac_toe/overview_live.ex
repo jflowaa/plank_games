@@ -1,7 +1,13 @@
 defmodule PlankGamesWeb.TicTacToe.OverviewLive do
   use PlankGamesWeb, :live_view
-
   @topic inspect(TicTacToe.Activity)
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <.live_component module={PlankGamesWeb.Live.Common.OverviewComponent} id="overview" game="tictactoe" lobbies={@lobbies}/>
+    """
+  end
 
   @impl true
   def mount(_, _, socket) do

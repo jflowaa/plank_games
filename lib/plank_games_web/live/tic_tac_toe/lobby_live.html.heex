@@ -1,43 +1,38 @@
-<div>
-  <div class="row">
-    <div class="column column-75">
-      <table class="tic-tac-toe-board">
-        <tr>
-          <%= for index <- 0..2 do %>
-          <%= render_square(%{position: index, board: @board}) %>
-          <% end %>
-        </tr>
-        <tr>
-          <%= for index <- 0..2 do %>
-          <%= render_square(%{position: index + 3, board: @board}) %>
-          <% end %>
-        </tr>
-        <tr>
-          <%= for index <- 0..2 do %>
-          <%= render_square(%{position: index + 6, board: @board}) %>
-          <% end %>
-        </tr>
+<div class="container mx-auto">
+  <div class="grid gap-4 md:grid-cols-12">
+    <div class="md:col-span-8">
+      <table class="table-fixed max-w-3xl">
+        <tbody>
+          <tr>
+            <%= for index <- 0..2 do %>
+            <%= render_square(%{position: index, board: @board}) %>
+            <% end %>
+          </tr>
+          <tr>
+            <%= for index <- 0..2 do %>
+            <%= render_square(%{position: index + 3, board: @board}) %>
+            <% end %>
+          </tr>
+          <tr>
+            <%= for index <- 0..2 do %>
+            <%= render_square(%{position: index + 6, board: @board}) %>
+            <% end %>
+          </tr>
+        </tbody>
       </table>
     </div>
-    <div class="column">
-      <p>Connected Users: <%= @connection_count %></p>
-      <%= if @show_join do %>
-        <button phx-click="join" class="button-small">Join Game</button>
-      <% end %>
-      <%= if @is_player and not @has_finished do %>
-        <button phx-click="leave" class="button-small">Leave Game</button>
-      <% end %>
-      <%= if @is_player and @has_finished do %>
-        <button phx-click="new" class="button-small">New Game</button>
-      <% end %>
-      <a href={"/tictactoe"}><button class="button-small">Leave Lobby</button></a>
-      <%= if @player_token do %>
-        <h4>Your Token: <%= @player_token %></h4>
-      <% end %>
-      <%= if @has_started do %>
-        <h4>Current Turn: <%= @current_token %></h4>
-      <% end %>
-      <.live_component module={PlankGamesWeb.Common.MessageLiveComponent} id="message" messages={@messages} />
+    <div class="md:col-span-4">
+      <.live_component module={PlankGamesWeb.Live.Common.LobbyPanelComponent} 
+        id="lobby-panel"
+        connection_count={@connection_count}
+        game="tictactoe"
+        show_join={@show_join} 
+        is_player={@is_player} 
+        has_started={@has_started} 
+        has_finished={@has_finished} 
+        player_token={@player_token}
+        current_token={@current_token}
+        messages={@messages} />
     </div>
   </div>
 </div>

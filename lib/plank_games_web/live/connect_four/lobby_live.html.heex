@@ -1,43 +1,36 @@
-<div>
-  <div class="row">
-    <div class="column" style="flex: 1;">
+<div class="grid  gap-4 md:grid-cols-12">
+  <div class="md:col-span-8 flex justify-center container mx-auto">
+    <div class="grid grid-cols-1 max-w-3xl">
       <%= for row <- Enum.with_index(@board) do %>
-        <div class="row connect-four-row">
-          <%= for cell <- Enum.with_index(elem(row, 0)) do %>
-            <svg phx-click="move" phx-value-position={elem(cell, 1)} class="connect-four-cell" preserveAspectRatio="none">
-              <rect x="0" y="0" width="100%" height="100%" fill="blue" />
-              <%= case elem(cell, 0) do %>
-                <% :red -> %>
-                  <circle cx="50%" cy="50%" r="35%" fill="red" />
-                <% :black -> %>
-                  <circle cx="50%" cy="50%" r="35%" fill="black"/>
-                <% _ -> %>
-                  <circle cx="50%" cy="50%" r="35%" fill="white"/>
-              <% end %>
-            </svg>
-          <% end %>
+        <div class="max-h-16 max-w-16 flex flex-row">
+        <%= for cell <- Enum.with_index(elem(row, 0)) do %>
+          <svg width="100%" height="100%" phx-click="move" phx-value-position={elem(cell, 1)} preserveAspectRatio="none" class={if elem(cell, 0) == :empty, do: "cursor-pointer"}>
+            <rect x="0" y="0" width="100%" height="100%" fill="blue" />
+            <%= case elem(cell, 0) do %>
+              <% :red -> %>
+                <circle cx="50%" cy="50%" r="35%" fill="red" />
+              <% :black -> %>
+                <circle cx="50%" cy="50%" r="35%" fill="black"/>
+              <% _ -> %>
+                <circle cx="50%" cy="50%" r="35%" fill="white"/>
+            <% end %>
+          </svg>
+        <% end %>
         </div>
       <% end %>
     </div>
-    <div class="column">
-      <p>Connected Users: <%= @connection_count %></p>
-      <%= if @show_join do %>
-        <button phx-click="join" class="button-small">Join Game</button>
-      <% end %>
-      <%= if @is_player and not @has_finished do %>
-        <button phx-click="leave" class="button-small">Leave Game</button>
-      <% end %>
-      <%= if @is_player and @has_finished do %>
-        <button phx-click="new" class="button-small">New Game</button>
-      <% end %>
-      <a href={"/connectfour"}><button class="button-small">Leave Lobby</button></a>
-      <%= if @player_token do %>
-        <h4>Your Token: <%= @player_token %></h4>
-      <% end %>
-      <%= if @has_started do %>
-        <h4>Current Turn: <%= @current_token %></h4>
-      <% end %>
-      <.live_component module={PlankGamesWeb.Common.MessageLiveComponent} id="message" messages={@messages} />
-    </div>
+  </div>
+  <div class="md:col-span-4">
+    <.live_component module={PlankGamesWeb.Live.Common.LobbyPanelComponent} 
+      id="lobby-panel"
+      connection_count={@connection_count}
+      game="connectfour"
+      show_join={@show_join} 
+      is_player={@is_player} 
+      has_started={@has_started} 
+      has_finished={@has_finished} 
+      player_token={@player_token}
+      current_token={@current_token}
+      messages={@messages} />
   </div>
 </div>

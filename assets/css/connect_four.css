@@ -1,9 +1,0 @@
-.connect-four-row {
-  flex-direction: row;
-}
-
-.connect-four-cell {
-  width: 75px;
-  height: 75px;
-  padding: 1px;
-}

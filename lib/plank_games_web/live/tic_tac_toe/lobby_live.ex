@@ -175,7 +175,7 @@ defmodule PlankGamesWeb.TicTacToe.LobbyLive do
 
   def render_square(%{position: position, board: board}, assigns \\ %{}) do
     ~H"""
-    <td phx-click="move" phx-value-position={"#{position}"}>
+    <td class={"border border-gray-500 border-4 #{if Enum.at(board, position) == "", do: "cursor-pointer"}"} phx-click="move" phx-value-position={"#{position}"}>
       <svg width="100%" height="100%" preserveAspectRatio="none">
           <%= case Enum.at(board, position) do %>
             <% "x" -> %>

@@ -1,7 +1,13 @@
 defmodule PlankGamesWeb.ConnectFour.OverviewLive do
   use PlankGamesWeb, :live_view
-
   @topic inspect(ConnectorFour.Activity)
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <.live_component module={PlankGamesWeb.Live.Common.OverviewComponent} id="overview" game="connectfour" lobbies={@lobbies}/>
+    """
+  end
 
   @impl true
   def mount(_, _, socket) do

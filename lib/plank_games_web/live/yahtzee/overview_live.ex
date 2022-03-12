@@ -1,7 +1,13 @@
 defmodule PlankGamesWeb.Yahtzee.OverviewLive do
   use PlankGamesWeb, :live_view
-
   @topic inspect(Yahtzee.Activity)
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <.live_component module={PlankGamesWeb.Live.Common.OverviewComponent} id="overview" game="yahtzee" lobbies={@lobbies}/>
+    """
+  end
 
   @impl true
   def mount(_, _, socket) do

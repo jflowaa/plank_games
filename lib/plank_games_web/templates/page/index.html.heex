@@ -1,25 +1,61 @@
-<header class="header">
-  <section class="container">
-    <h1 class="title">Welcome to Plank Games</h1>
-    <p class="description">A place to play board games</p>
-    <small class="description">
-    This is a site used for learning Elixir, expect it to not work (or be mobile friendly): <br/>
-    <a href="https://github.com/jflowaa/plank_games">Source</a>
-    </small>
-  </section>
+<header>
+  <div class="flex justify-center items-center">
+    <section class="bg-white 
+      dark:bg-gray-800 
+      w-4/5 rounded-lg 
+      px-6 
+      py-14 
+      my-16 
+      ring-1 
+      ring-slate-900/5 
+      shadow-xl 
+      text-slate-900 
+      dark:text-white 
+      text-center">
+        <h1 class="font-thin text-3xl">Welcome to Plank Games</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm">A place to play board games</p>
+        <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm">
+          This is a site used for learning Elixir, expect it to not work (or be mobile friendly): <br/>
+          <a href="https://github.com/jflowaa/plank_games">Source</a>
+        </p>
+    </section>
+  </div>
 </header>
 
-<section class="container showcase-hero">
-  <h5 class="title">Available Games</h5>
-    <ul>
-      <li>
-        <a href="/tictactoe">Tic Tac Toe</a>
-      </li>
-      <li>
-        <a href="/connectfour">Connect Four</a>
-      </li>
-      <li>
-        <a href="/yahtzee">Yahtzee (wip - no ui)</a>
-      </li>
-    </ul>
+<section class="flex justify-center dark:text-white py-10">
+  <div>
+    <h2 class="font-thin text-3xl pb-3 mx-10">Available Games</h2>
+    <div class="rounded-lg border border-gray-200 ">
+        <a href="/tictactoe" class="block
+          px-6
+          py-2
+          border-b border-gray-200
+          w-full
+          hover:bg-gray-100 hover:text-gray-500
+          focus:outline-none focus:ring-0 focus:bg-gray-200 focus:text-gray-600
+          transition
+          duration-500
+          cursor-pointer">Tic Tac Toe</a>
+        <a href="/connectfour" class="block
+          px-6
+          py-2
+          border-b border-gray-200
+          w-full
+          hover:bg-gray-100 hover:text-gray-500
+          focus:outline-none focus:ring-0 focus:bg-gray-200 focus:text-gray-600
+          transition
+          duration-500
+          cursor-pointer">Connect Four</a>
+        <a href="/yahtzee" class="block
+          px-6
+          py-2
+          border-b border-gray-200
+          w-full
+          hover:bg-gray-100 hover:text-gray-500
+          focus:outline-none focus:ring-0 focus:bg-gray-200 focus:text-gray-600
+          transition
+          duration-500
+          cursor-pointer">Yahtzee (wip)</a>
+      </div>
+  </div>
 </section>
