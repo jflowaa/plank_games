@@ -3,7 +3,7 @@ defmodule PlankGamesWeb.Yahtzee.DiceLiveComponent do
 
   def render(assigns) do
     ~H"""
-    <div class="block p-6 my-3 rounded-lg shadow-lg bg-white dark:bg-gray-800 max-w-md">
+    <div class="block p-6 mx-auto rounded-lg shadow-lg bg-white dark:bg-gray-800 max-w-sm">
       <%= if @is_player do %>
         <button phx-click="roll" class="btn-primary">Roll</button>
       <% end %>
