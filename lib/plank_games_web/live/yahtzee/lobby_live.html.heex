@@ -20,9 +20,6 @@
       </div>
     </div>
     <div class="md:col-span-4">
-      <%= if @is_player and not @has_started do %>
-        <button phx-click="start" class="btn-primary">Start Game</button>
-      <% end %>
       <.live_component module={PlankGamesWeb.Live.Common.LobbyPanelComponent} 
         id="lobby-panel"
         connection_count={@connection_count}
@@ -33,7 +30,16 @@
         has_finished={@has_finished} 
         player_name={@player_name}
         current_player={@current_player}
-        messages={@messages} />
+        messages={@messages} >
+          <:extra_buttons>
+            <%= if @is_player and not @has_started do %>
+              <button phx-click="start" class="btn-primary">Start Game</button>
+            <% end %>
+          </:extra_buttons>
+          <:extra_text>
+            <p class="font-bold text-md p-2 text-red-400">Game is not full implemented and buggy</p>
+          </:extra_text>
+        </.live_component>
     </div>
   </div>
 </div>
