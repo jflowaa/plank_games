@@ -95,6 +95,12 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
   def handle_event("start", _, socket) do
     Yahtzee.Lobby.start(Map.get(socket.assigns, :lobby_id))
 
+    Phoenix.PubSub.broadcast(
+      PlankGames.PubSub,
+      "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
+      {:change}
+    )
+
     {:noreply, fetch(socket)}
   end
 
@@ -106,6 +112,12 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
       String.to_integer(die)
     )
 
+    Phoenix.PubSub.broadcast(
+      PlankGames.PubSub,
+      "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
+      {:change}
+    )
+
     {:noreply, fetch(socket)}
   end
 
@@ -115,6 +127,12 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
       Map.get(socket.assigns, :lobby_id),
       Map.get(socket.assigns, :player_id),
       String.to_integer(die)
+    )
+
+    Phoenix.PubSub.broadcast(
+      PlankGames.PubSub,
+      "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
+      {:change}
     )
 
     {:noreply, fetch(socket)}
