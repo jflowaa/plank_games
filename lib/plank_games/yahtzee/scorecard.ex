@@ -1,4 +1,4 @@
-defmodule Yahtzee.Scorecard do
+defmodule PlankGames.Yahtzee.Scorecard do
   @upper_section [:ones, :twos, :threes, :fours, :fives, :sixes]
   @upper_section_bonus_threshold 62
   @upper_section_bonus 25

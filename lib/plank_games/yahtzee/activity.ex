@@ -1,4 +1,4 @@
-defmodule Yahtzee.Activity do
+defmodule PlankGames.Yahtzee.Activity do
   use GenServer
   require Logger
 
@@ -23,7 +23,7 @@ defmodule Yahtzee.Activity do
   def handle_call(:refresh, _from, state), do: {:reply, state, get_lobbies()}
 
   defp get_lobbies() do
-    children = Supervisor.which_children(Yahtzee.LobbySupervisor)
+    children = Supervisor.which_children(PlankGames.Yahtzee.LobbySupervisor)
 
     Enum.reduce(children, %{}, fn child, state ->
       lobby_state = :sys.get_state(elem(child, 1))

@@ -3,7 +3,7 @@
 ## Scorecard
 
 ```elixir
-defmodule Yahtzee.Scorecard do
+defmodule PlankGames.Yahtzee.Scorecard do
   @upper_section [:ones, :twos, :threes, :fours, :fives, :sixes]
   @upper_section_bonus_threshold 62
   @upper_section_bonus 25
@@ -113,14 +113,14 @@ end
 <!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
-scorecard = %Yahtzee.Scorecard{}
-Yahtzee.Scorecard.is_complete?(scorecard)
+scorecard = %PlankGames.Yahtzee.Scorecard{}
+PlankGames.Yahtzee.Scorecard.is_complete?(scorecard)
 ```
 
 ## Yahtzee State
 
 ```elixir
-defmodule Yahtzee.State do
+defmodule PlankGames.Yahtzee.State do
   @dice_per_hand 5
 
   defstruct dice: for(i <- 1..@dice_per_hand, into: %{}, do: {i, %{value: nil, hold: false}}),
@@ -128,7 +128,7 @@ defmodule Yahtzee.State do
             roll_count: 0
 
   def add_scorecard(state, player_id) do
-    Map.put(state, :scorecards, Map.put(state.scorecards, player_id, %Yahtzee.Scorecard{}))
+    Map.put(state, :scorecards, Map.put(state.scorecards, player_id, %PlankGames.Yahtzee.Scorecard{}))
   end
 
   def remove_player(state, player_id) do
@@ -137,7 +137,7 @@ defmodule Yahtzee.State do
 
   def compute_player_totals(state) do
     case Enum.all?(Map.to_list(state.scorecards), fn x ->
-           Yahtzee.Scorecard.is_complete?(elem(x, 1))
+           PlankGames.Yahtzee.Scorecard.is_complete?(elem(x, 1))
          end) do
       true ->
         {:ok,
@@ -146,8 +146,8 @@ defmodule Yahtzee.State do
            :scorecards,
            for(
              x <- Map.to_list(state.scorecards),
-             into: %{player_id: %Yahtzee.Scorecard{}},
-             do: {elem(x, 0), Yahtzee.Scorecard.compute_total(elem(x, 1))}
+             into: %{player_id: %PlankGames.Yahtzee.Scorecard{}},
+             do: {elem(x, 0), PlankGames.Yahtzee.Scorecard.compute_total(elem(x, 1))}
            )
          )}
 
@@ -158,7 +158,7 @@ defmodule Yahtzee.State do
 
   def end_turn(state, player_id, category) do
     cond do
-      not Yahtzee.Scorecard.valid_category?(category) ->
+      not PlankGames.Yahtzee.Scorecard.valid_category?(category) ->
         {:invalid_category, state}
 
       is_nil(Map.get(state.scorecards, player_id)) ->
@@ -175,7 +175,7 @@ defmodule Yahtzee.State do
            Map.put(
              state.scorecards,
              player_id,
-             Yahtzee.Scorecard.score_category(
+             PlankGames.Yahtzee.Scorecard.score_category(
                Map.get(state.scorecards, player_id),
                category,
                state.dice
@@ -231,10 +231,10 @@ end
 <!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
-state = %Yahtzee.State{}
-state = Yahtzee.State.add_scorecard(state, "me")
-result = Yahtzee.State.roll_dice(state)
-result = Yahtzee.State.end_turn(elem(result, 1), "me", :ones)
-result = Yahtzee.State.end_turn(elem(result, 1), "me", :threes)
-result = Yahtzee.State.compute_player_totals(elem(result, 1))
+state = %PlankGames.Yahtzee.State{}
+state = PlankGames.Yahtzee.State.add_scorecard(state, "me")
+result = PlankGames.Yahtzee.State.roll_dice(state)
+result = PlankGames.Yahtzee.State.end_turn(elem(result, 1), "me", :ones)
+result = PlankGames.Yahtzee.State.end_turn(elem(result, 1), "me", :threes)
+result = PlankGames.Yahtzee.State.compute_player_totals(elem(result, 1))
 ```

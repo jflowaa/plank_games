@@ -1,4 +1,4 @@
-defmodule ConnectFour.Activity do
+defmodule PlankGames.ConnectFour.Activity do
   use GenServer
   require Logger
 
@@ -26,7 +26,7 @@ defmodule ConnectFour.Activity do
   def handle_call(:refresh, _from, state), do: {:reply, state, get_lobbies()}
 
   defp get_lobbies() do
-    children = Supervisor.which_children(ConnectFour.LobbySupervisor)
+    children = Supervisor.which_children(PlankGames.ConnectFour.LobbySupervisor)
 
     Enum.reduce(children, %{}, fn child, state ->
       lobby_state = :sys.get_state(elem(child, 1))

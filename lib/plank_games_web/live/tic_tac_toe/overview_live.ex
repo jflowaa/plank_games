@@ -1,6 +1,6 @@
 defmodule PlankGamesWeb.TicTacToe.OverviewLive do
   use PlankGamesWeb, :live_view
-  @topic inspect(TicTacToe.Activity)
+  @topic inspect(PlankGames.TicTacToe.Activity)
 
   @impl true
   def render(assigns) do
@@ -14,19 +14,19 @@ defmodule PlankGamesWeb.TicTacToe.OverviewLive do
     if connected?(socket),
       do: Phoenix.PubSub.subscribe(PlankGames.PubSub, @topic)
 
-    TicTacToe.Activity.refresh()
+    PlankGames.TicTacToe.Activity.refresh()
     {:ok, fetch(socket) |> assign(:uuid, UUID.uuid4())}
   end
 
   @impl true
   def handle_info(:update, socket) do
-    TicTacToe.Activity.refresh()
+    PlankGames.TicTacToe.Activity.refresh()
 
     {:noreply, fetch(socket)}
   end
 
   defp fetch(socket) do
-    state = TicTacToe.Activity.lookup()
+    state = PlankGames.TicTacToe.Activity.lookup()
 
     socket
     |> assign(:lobbies, state)

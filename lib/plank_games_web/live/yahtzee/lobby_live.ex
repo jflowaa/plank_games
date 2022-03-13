@@ -1,16 +1,16 @@
-defmodule PlankGamesWeb.Yahtzee.LobbyLive do
+defmodule PlankGamesWeb.PlankGames.Yahtzee.LobbyLive do
   use PlankGamesWeb, :live_view
 
-  @topic inspect(Yahtzee.Lobby)
+  @topic inspect(PlankGames.Yahtzee.Lobby)
 
   @impl true
   def mount(params, session, socket) do
-    Yahtzee.create(params["lobby_id"])
+    PlankGames.Yahtzee.create(params["lobby_id"])
 
     if connected?(socket) do
       Phoenix.PubSub.subscribe(PlankGames.PubSub, "#{@topic}_#{params["lobby_id"]}")
 
-      Common.Monitor.monitor(%Common.Monitor{
+      PlankGames.Common.Monitor.monitor(%PlankGames.Common.Monitor{
         :game_pid => self(),
         :player_id => session["player_id"],
         :lobby_id => params["lobby_id"],
@@ -28,7 +28,7 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
 
   @impl true
   def handle_event("join", _, socket) do
-    case Yahtzee.Lobby.join(
+    case PlankGames.Yahtzee.Lobby.join(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :player_id)
          ) do
@@ -49,7 +49,7 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
 
   @impl true
   def handle_event("new", _, socket) do
-    case Yahtzee.Lobby.new(
+    case PlankGames.Yahtzee.Lobby.new(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :player_id)
          ) do
@@ -76,7 +76,7 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
 
   @impl true
   def handle_event("leave", _, socket) do
-    if Yahtzee.Lobby.remove_player(
+    if PlankGames.Yahtzee.Lobby.remove_player(
          Map.get(socket.assigns, :lobby_id),
          Map.get(socket.assigns, :player_id)
        ) ==
@@ -93,7 +93,7 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
 
   @impl true
   def handle_event("start", _, socket) do
-    Yahtzee.Lobby.start(Map.get(socket.assigns, :lobby_id))
+    PlankGames.Yahtzee.Lobby.start(Map.get(socket.assigns, :lobby_id))
 
     Phoenix.PubSub.broadcast(
       PlankGames.PubSub,
@@ -106,7 +106,7 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
 
   @impl true
   def handle_event("hold", %{"die" => die}, socket) do
-    Yahtzee.Lobby.hold_die(
+    PlankGames.Yahtzee.Lobby.hold_die(
       Map.get(socket.assigns, :lobby_id),
       Map.get(socket.assigns, :player_id),
       String.to_integer(die)
@@ -123,7 +123,7 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
 
   @impl true
   def handle_event("release", %{"die" => die}, socket) do
-    Yahtzee.Lobby.release_die(
+    PlankGames.Yahtzee.Lobby.release_die(
       Map.get(socket.assigns, :lobby_id),
       Map.get(socket.assigns, :player_id),
       String.to_integer(die)
@@ -140,7 +140,7 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
 
   @impl true
   def handle_event("roll", _, socket) do
-    case Yahtzee.Lobby.roll(
+    case PlankGames.Yahtzee.Lobby.roll(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :player_id)
          ) do
@@ -163,7 +163,7 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
          ])}
 
       :ok ->
-        state = Yahtzee.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
+        state = PlankGames.Yahtzee.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
         game_state = Map.get(state, :game_state)
 
         if state.has_finished do
@@ -194,7 +194,7 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
 
   @impl true
   def handle_event("end_turn", %{"category" => category}, socket) do
-    case Yahtzee.Lobby.end_turn(
+    case PlankGames.Yahtzee.Lobby.end_turn(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :player_id),
            String.to_atom(category)
@@ -242,7 +242,7 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
   def handle_info({:change}, socket), do: {:noreply, fetch(socket)}
 
   def fetch(socket) do
-    state = Yahtzee.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
+    state = PlankGames.Yahtzee.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
     game_state = Map.get(state, :game_state)
 
     player =
@@ -274,11 +274,11 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
     |> assign(:winner, Map.get(state, :winner))
     |> assign(
       :show_join,
-      Common.LobbyState.is_joinable?(state, Map.get(socket.assigns, :player_id))
+      PlankGames.Common.LobbyState.is_joinable?(state, Map.get(socket.assigns, :player_id))
     )
     |> assign(
       :is_player,
-      Common.LobbyState.is_player?(state, Map.get(socket.assigns, :player_id))
+      PlankGames.Common.LobbyState.is_player?(state, Map.get(socket.assigns, :player_id))
     )
   end
 

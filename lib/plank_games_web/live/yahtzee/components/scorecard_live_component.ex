@@ -1,4 +1,4 @@
-defmodule PlankGamesWeb.Yahtzee.ScorecardLiveComponent do
+defmodule PlankGamesWeb.PlankGames.Yahtzee.ScorecardLiveComponent do
   use Phoenix.LiveComponent
 
   def render(assigns) do
@@ -12,7 +12,7 @@ defmodule PlankGamesWeb.Yahtzee.ScorecardLiveComponent do
             <th scope="col" class="text-left">Score</th>
           </thead>
           <tbody>
-            <%= for category <- Yahtzee.Scorecard.get_upper_section() do %>
+            <%= for category <- PlankGames.Yahtzee.Scorecard.get_upper_section() do %>
               <tr>
                 <td class="text-md"><%= "#{category}" |> String.replace("_", " ") |> :string.titlecase() %></td>
                 <td class={"text-center #{if is_nil(Map.get(elem(@scorecard, 1), category)), do: "cursor-pointer border-b"}"} phx-click="end_turn" phx-value-category={"#{category}"}><%= Map.get(elem(@scorecard, 1), category) %></td>
@@ -26,7 +26,7 @@ defmodule PlankGamesWeb.Yahtzee.ScorecardLiveComponent do
               <td class="text-md">Upper section</td>
               <td class="text-center" ><%= Map.get(elem(@scorecard, 1), :upper_section) %></td>
             </tr>
-            <%= for category <- Yahtzee.Scorecard.get_lower_section() do %>
+            <%= for category <- PlankGames.Yahtzee.Scorecard.get_lower_section() do %>
               <tr>
                 <td class="text-md"><%= "#{category}" |> String.replace("_", " ") |> :string.titlecase() %></td>
                 <td class={"text-center #{if is_nil(Map.get(elem(@scorecard, 1), category)), do: "cursor-pointer border-b"}"} phx-click="end_turn" phx-value-category={"#{category}"}><%= Map.get(elem(@scorecard, 1), category) %></td>

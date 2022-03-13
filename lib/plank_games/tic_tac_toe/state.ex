@@ -1,4 +1,4 @@
-defmodule TicTacToe.State do
+defmodule PlankGames.TicTacToe.State do
   defstruct board: [
               "",
               "",
@@ -59,10 +59,10 @@ defmodule TicTacToe.State do
   def switch_token(state) do
     case state.current_token do
       "x" ->
-        %TicTacToe.State{state | :current_token => "o"}
+        %PlankGames.TicTacToe.State{state | :current_token => "o"}
 
       "o" ->
-        %TicTacToe.State{state | :current_token => "x"}
+        %PlankGames.TicTacToe.State{state | :current_token => "x"}
     end
   end
 end

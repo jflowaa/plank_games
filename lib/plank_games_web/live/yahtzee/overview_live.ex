@@ -1,6 +1,6 @@
 defmodule PlankGamesWeb.Yahtzee.OverviewLive do
   use PlankGamesWeb, :live_view
-  @topic inspect(Yahtzee.Activity)
+  @topic inspect(PlankGames.Yahtzee.Activity)
 
   @impl true
   def render(assigns) do
@@ -14,19 +14,19 @@ defmodule PlankGamesWeb.Yahtzee.OverviewLive do
     if connected?(socket),
       do: Phoenix.PubSub.subscribe(PlankGames.PubSub, @topic)
 
-    Yahtzee.Activity.refresh()
+    PlankGames.Yahtzee.Activity.refresh()
     {:ok, fetch(socket) |> assign(:uuid, UUID.uuid4())}
   end
 
   @impl true
   def handle_info(:update, socket) do
-    Yahtzee.Activity.refresh()
+    PlankGames.Yahtzee.Activity.refresh()
 
     {:noreply, fetch(socket)}
   end
 
   defp fetch(socket) do
-    state = Yahtzee.Activity.lookup()
+    state = PlankGames.Yahtzee.Activity.lookup()
 
     socket
     |> assign(:lobbies, state)

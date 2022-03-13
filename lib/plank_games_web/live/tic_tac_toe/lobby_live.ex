@@ -1,16 +1,16 @@
-defmodule PlankGamesWeb.TicTacToe.LobbyLive do
+defmodule PlankGamesWeb.PlankGames.TicTacToe.LobbyLive do
   use PlankGamesWeb, :live_view
 
-  @topic inspect(TicTacToe.Lobby)
+  @topic inspect(PlankGames.TicTacToe.Lobby)
 
   @impl true
   def mount(params, session, socket) do
-    TicTacToe.create(params["lobby_id"])
+    PlankGames.TicTacToe.create(params["lobby_id"])
 
     if connected?(socket) do
       Phoenix.PubSub.subscribe(PlankGames.PubSub, "#{@topic}_#{params["lobby_id"]}")
 
-      Common.Monitor.monitor(%Common.Monitor{
+      PlankGames.Common.Monitor.monitor(%PlankGames.Common.Monitor{
         :game_pid => self(),
         :player_id => session["player_id"],
         :lobby_id => params["lobby_id"],
@@ -28,7 +28,7 @@ defmodule PlankGamesWeb.TicTacToe.LobbyLive do
 
   @impl true
   def handle_event("move", %{"position" => position}, socket) do
-    case TicTacToe.Lobby.move(
+    case PlankGames.TicTacToe.Lobby.move(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :player_id),
            String.to_integer(position)
@@ -44,7 +44,7 @@ defmodule PlankGamesWeb.TicTacToe.LobbyLive do
         {:noreply, assign(socket, :messages, ["Not your turn" | get_tailing_messages(socket)])}
 
       :ok ->
-        state = TicTacToe.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
+        state = PlankGames.TicTacToe.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
         game_state = Map.get(state, :game_state)
 
         if state.has_finished do
@@ -75,7 +75,7 @@ defmodule PlankGamesWeb.TicTacToe.LobbyLive do
 
   @impl true
   def handle_event("join", _, socket) do
-    case TicTacToe.Lobby.join(
+    case PlankGames.TicTacToe.Lobby.join(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :player_id)
          ) do
@@ -102,7 +102,7 @@ defmodule PlankGamesWeb.TicTacToe.LobbyLive do
 
   @impl true
   def handle_event("new", _, socket) do
-    case TicTacToe.Lobby.new(
+    case PlankGames.TicTacToe.Lobby.new(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :player_id)
          ) do
@@ -129,7 +129,7 @@ defmodule PlankGamesWeb.TicTacToe.LobbyLive do
 
   @impl true
   def handle_event("leave", _, socket) do
-    if TicTacToe.Lobby.remove_player(
+    if PlankGames.TicTacToe.Lobby.remove_player(
          Map.get(socket.assigns, :lobby_id),
          Map.get(socket.assigns, :player_id)
        ) ==
@@ -152,7 +152,7 @@ defmodule PlankGamesWeb.TicTacToe.LobbyLive do
   def handle_info({:change}, socket), do: {:noreply, fetch(socket)}
 
   defp fetch(socket) do
-    state = TicTacToe.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
+    state = PlankGames.TicTacToe.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
     game_state = Map.get(state, :game_state)
 
     socket
@@ -165,11 +165,11 @@ defmodule PlankGamesWeb.TicTacToe.LobbyLive do
     |> assign(:player_name, determine_player_token(socket, state))
     |> assign(
       :show_join,
-      Common.LobbyState.is_joinable?(state, Map.get(socket.assigns, :player_id))
+      PlankGames.Common.LobbyState.is_joinable?(state, Map.get(socket.assigns, :player_id))
     )
     |> assign(
       :is_player,
-      Common.LobbyState.is_player?(state, Map.get(socket.assigns, :player_id))
+      PlankGames.Common.LobbyState.is_player?(state, Map.get(socket.assigns, :player_id))
     )
   end
 

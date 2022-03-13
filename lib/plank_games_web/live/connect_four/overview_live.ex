@@ -14,19 +14,19 @@ defmodule PlankGamesWeb.ConnectFour.OverviewLive do
     if connected?(socket),
       do: Phoenix.PubSub.subscribe(PlankGames.PubSub, @topic)
 
-    ConnectFour.Activity.refresh()
+    PlankGames.ConnectFour.Activity.refresh()
     {:ok, fetch(socket) |> assign(:uuid, UUID.uuid4())}
   end
 
   @impl true
   def handle_info(:update, socket) do
-    ConnectFour.Activity.refresh()
+    PlankGames.ConnectFour.Activity.refresh()
 
     {:noreply, fetch(socket)}
   end
 
   defp fetch(socket) do
-    state = ConnectFour.Activity.lookup()
+    state = PlankGames.ConnectFour.Activity.lookup()
 
     socket
     |> assign(:lobbies, state)

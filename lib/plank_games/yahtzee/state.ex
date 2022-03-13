@@ -1,4 +1,4 @@
-defmodule Yahtzee.State do
+defmodule PlankGames.Yahtzee.State do
   @dice_per_hand 5
 
   defstruct dice: for(i <- 1..@dice_per_hand, into: %{}, do: {i, %{value: nil, hold: false}}),
@@ -6,7 +6,12 @@ defmodule Yahtzee.State do
             roll_count: 0
 
   def add_scorecard(state, player_id),
-    do: Map.put(state, :scorecards, Map.put(state.scorecards, player_id, %Yahtzee.Scorecard{}))
+    do:
+      Map.put(
+        state,
+        :scorecards,
+        Map.put(state.scorecards, player_id, %PlankGames.Yahtzee.Scorecard{})
+      )
 
   def remove_scorecard(state, player_id),
     do: Map.put(state, :scorecards, elem(Map.pop(state.scorecards, player_id), 1))
@@ -18,14 +23,14 @@ defmodule Yahtzee.State do
       for(
         x <- Map.to_list(state.scorecards),
         into: %{},
-        do: {elem(x, 0), Yahtzee.Scorecard.compute_total(elem(x, 1))}
+        do: {elem(x, 0), PlankGames.Yahtzee.Scorecard.compute_total(elem(x, 1))}
       )
     )
   end
 
   def end_turn(state, player_id, category) do
     cond do
-      not Yahtzee.Scorecard.valid_category?(category) ->
+      not PlankGames.Yahtzee.Scorecard.valid_category?(category) ->
         {:invalid_category, state}
 
       is_nil(Map.get(state.scorecards, player_id)) ->
@@ -45,7 +50,7 @@ defmodule Yahtzee.State do
            Map.put(
              state.scorecards,
              player_id,
-             Yahtzee.Scorecard.score_category(
+             PlankGames.Yahtzee.Scorecard.score_category(
                Map.get(state.scorecards, player_id),
                category,
                state.dice

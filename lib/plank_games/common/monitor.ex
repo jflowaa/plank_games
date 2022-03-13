@@ -1,4 +1,4 @@
-defmodule Common.Monitor do
+defmodule PlankGames.Common.Monitor do
   use GenServer
 
   defstruct [
@@ -31,29 +31,29 @@ defmodule Common.Monitor do
 
     case Map.get(details, :type) do
       :tictactoe ->
-        TicTacToe.Lobby.add_player(Map.get(details, :lobby_id))
+        PlankGames.TicTacToe.Lobby.add_player(Map.get(details, :lobby_id))
 
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
-          "TicTacToe.Activity",
+          "PlankGames.TicTacToe.Activity",
           :update
         )
 
       :connectfour ->
-        ConnectFour.Lobby.add_player(Map.get(details, :lobby_id))
+        PlankGames.ConnectFour.Lobby.add_player(Map.get(details, :lobby_id))
 
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
-          "ConnectFour.Activity",
+          "PlankGames.ConnectFour.Activity",
           :update
         )
 
       :yahtzee ->
-        Yahtzee.Lobby.add_player(Map.get(details, :lobby_id))
+        PlankGames.Yahtzee.Lobby.add_player(Map.get(details, :lobby_id))
 
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
-          "Yahtzee.Activity",
+          "PlankGames.Yahtzee.Activity",
           :update
         )
     end
@@ -66,62 +66,62 @@ defmodule Common.Monitor do
 
     case Map.get(details, :type) do
       :tictactoe ->
-        if TicTacToe.Lobby.remove_player(
+        if PlankGames.TicTacToe.Lobby.remove_player(
              Map.get(details, :lobby_id),
              Map.get(details, :player_id)
            ) == :player_left do
           Phoenix.PubSub.broadcast(
             PlankGames.PubSub,
-            "TicTacToe.Lobby_#{Map.get(details, :lobby_id)}",
+            "PlankGames.TicTacToe.Lobby_#{Map.get(details, :lobby_id)}",
             {:change, "Player left, starting new game"}
           )
         end
 
-        TicTacToe.Lobby.remove_player(Map.get(details, :lobby_id))
+        PlankGames.TicTacToe.Lobby.remove_player(Map.get(details, :lobby_id))
 
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
-          "TicTacToe.Activity",
+          "PlankGames.TicTacToe.Activity",
           :update
         )
 
       :connectfour ->
-        if ConnectFour.Lobby.remove_player(
+        if PlankGames.ConnectFour.Lobby.remove_player(
              Map.get(details, :lobby_id),
              Map.get(details, :player_id)
            ) == :player_left do
           Phoenix.PubSub.broadcast(
             PlankGames.PubSub,
-            "ConnectFour.Lobby_#{Map.get(details, :lobby_id)}",
+            "PlankGames.ConnectFour.Lobby_#{Map.get(details, :lobby_id)}",
             {:change, "Player left, starting new game"}
           )
         end
 
-        ConnectFour.Lobby.remove_player(Map.get(details, :lobby_id))
+        PlankGames.ConnectFour.Lobby.remove_player(Map.get(details, :lobby_id))
 
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
-          "ConnectFour.Activity",
+          "PlankGames.ConnectFour.Activity",
           :update
         )
 
       :yahtzee ->
-        if Yahtzee.Lobby.remove_player(
+        if PlankGames.Yahtzee.Lobby.remove_player(
              Map.get(details, :lobby_id),
              Map.get(details, :player_id)
            ) == :player_left do
           Phoenix.PubSub.broadcast(
             PlankGames.PubSub,
-            "Yahtzee.Lobby_#{Map.get(details, :lobby_id)}",
+            "PlankGames.Yahtzee.Lobby_#{Map.get(details, :lobby_id)}",
             {:change, "Player left, starting new game"}
           )
         end
 
-        Yahtzee.Lobby.remove_player(Map.get(details, :lobby_id))
+        PlankGames.Yahtzee.Lobby.remove_player(Map.get(details, :lobby_id))
 
         Phoenix.PubSub.broadcast(
           PlankGames.PubSub,
-          "Yahtzee.Activity",
+          "PlankGames.Yahtzee.Activity",
           :update
         )
     end

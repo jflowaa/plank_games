@@ -1,4 +1,4 @@
-defmodule Yahtzee.Lobby do
+defmodule PlankGames.Yahtzee.Lobby do
   use GenServer, restart: :transient
   require Logger
 
@@ -51,18 +51,18 @@ defmodule Yahtzee.Lobby do
 
   def init(args) do
     Process.flag(:trap_exit, true)
-    {:ok, Common.LobbyState.new(Keyword.get(args, :lobby_id), :yahtzee)}
+    {:ok, PlankGames.Common.LobbyState.new(Keyword.get(args, :lobby_id), :yahtzee)}
   end
 
   def handle_call(:get, _from, state), do: {:reply, state, state}
 
   def handle_call({:new, player_id}, _from, state) do
     cond do
-      not Common.LobbyState.is_player?(state, player_id) ->
+      not PlankGames.Common.LobbyState.is_player?(state, player_id) ->
         {:reply, :not_player, state}
 
       state.has_finished ->
-        {:reply, :ok, Common.LobbyState.new(state)}
+        {:reply, :ok, PlankGames.Common.LobbyState.new(state)}
 
       true ->
         {:reply, :not_finished, state}
@@ -77,12 +77,16 @@ defmodule Yahtzee.Lobby do
       true ->
         {:reply, :ok,
          state
-         |> Common.LobbyState.add_player(player_id)
-         |> Map.put(:game_state, Yahtzee.State.add_scorecard(state.game_state, player_id))}
+         |> PlankGames.Common.LobbyState.add_player(player_id)
+         |> Map.put(
+           :game_state,
+           PlankGames.Yahtzee.State.add_scorecard(state.game_state, player_id)
+         )}
     end
   end
 
-  def handle_call(:start, _from, state), do: {:reply, :ok, Common.LobbyState.start(state)}
+  def handle_call(:start, _from, state),
+    do: {:reply, :ok, PlankGames.Common.LobbyState.start(state)}
 
   def handle_call({:roll, _}, _from, state) when not state.has_started or state.has_finished,
     do: {:reply, :not_started, state}
@@ -91,7 +95,7 @@ defmodule Yahtzee.Lobby do
     do: {:reply, :not_turn, state}
 
   def handle_call({:roll, _}, _from, state) do
-    result = Yahtzee.State.roll_dice(state.game_state)
+    result = PlankGames.Yahtzee.State.roll_dice(state.game_state)
 
     case elem(result, 0) do
       :ok ->
@@ -114,7 +118,9 @@ defmodule Yahtzee.Lobby do
     do: {:reply, :invalid_die, state}
 
   def handle_call({:hold_die, _, die}, _from, state),
-    do: {:reply, :ok, Map.put(state, :game_state, Yahtzee.State.hold_die(state.game_state, die))}
+    do:
+      {:reply, :ok,
+       Map.put(state, :game_state, PlankGames.Yahtzee.State.hold_die(state.game_state, die))}
 
   def handle_call({:release_die, _, _}, _from, state)
       when not state.has_started or state.has_finished,
@@ -129,16 +135,21 @@ defmodule Yahtzee.Lobby do
 
   def handle_call({:release_die, _, die}, _from, state),
     do:
-      {:reply, :ok, Map.put(state, :game_state, Yahtzee.State.release_die(state.game_state, die))}
+      {:reply, :ok,
+       Map.put(state, :game_state, PlankGames.Yahtzee.State.release_die(state.game_state, die))}
 
   def handle_call({:end_turn, player_id, category}, _from, state) do
-    result = Yahtzee.State.end_turn(state.game_state, player_id, category)
+    result = PlankGames.Yahtzee.State.end_turn(state.game_state, player_id, category)
 
     case elem(result, 0) do
       :ok ->
         {:reply, elem(result, 0),
-         Map.put(state, :game_state, Yahtzee.State.compute_player_totals(elem(result, 1)))
-         |> Common.LobbyState.switch_player()}
+         Map.put(
+           state,
+           :game_state,
+           PlankGames.Yahtzee.State.compute_player_totals(elem(result, 1))
+         )
+         |> PlankGames.Common.LobbyState.switch_player()}
 
       _ ->
         {:reply, elem(result, 0), Map.put(state, :game_state, elem(result, 1))}
@@ -146,13 +157,16 @@ defmodule Yahtzee.Lobby do
   end
 
   def handle_call({:remove_player, player_id}, _from, state) do
-    result = Common.LobbyState.remove_player(state, player_id)
+    result = PlankGames.Common.LobbyState.remove_player(state, player_id)
 
     case elem(result, 0) do
       :player_left ->
         {:reply, :player_left,
          elem(result, 1)
-         |> Map.put(:game_state, Yahtzee.State.remove_scorecard(state.game_state, player_id))}
+         |> Map.put(
+           :game_state,
+           PlankGames.Yahtzee.State.remove_scorecard(state.game_state, player_id)
+         )}
 
       _ ->
         {:reply, elem(result, 0), elem(result, 1)}
@@ -169,7 +183,7 @@ defmodule Yahtzee.Lobby do
     do: {:reply, :ok, Map.put(state, :connection_count, Map.get(state, :connection_count) + 1)}
 
   def handle_info(:close, state) do
-    case Common.LobbyState.should_close?(state) do
+    case PlankGames.Common.LobbyState.should_close?(state) do
       true ->
         {:stop, :normal, state}
 
@@ -179,5 +193,5 @@ defmodule Yahtzee.Lobby do
   end
 
   defp via_tuple(lobby_id),
-    do: {:via, Registry, {Yahtzee.LobbyRegistry, "lobby_#{lobby_id}"}}
+    do: {:via, Registry, {PlankGames.Yahtzee.LobbyRegistry, "lobby_#{lobby_id}"}}
 end

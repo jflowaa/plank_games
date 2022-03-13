@@ -1,4 +1,4 @@
-defmodule ConnectFour.State do
+defmodule PlankGames.ConnectFour.State do
   @rows 6
   @columns 7
 
@@ -24,10 +24,10 @@ defmodule ConnectFour.State do
   def switch_token(state) do
     case state.current_token do
       :red ->
-        %ConnectFour.State{state | :current_token => :black}
+        %PlankGames.ConnectFour.State{state | :current_token => :black}
 
       :black ->
-        %ConnectFour.State{state | :current_token => :red}
+        %PlankGames.ConnectFour.State{state | :current_token => :red}
     end
   end
 

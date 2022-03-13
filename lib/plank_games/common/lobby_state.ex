@@ -1,4 +1,4 @@
-defmodule Common.LobbyState do
+defmodule PlankGames.Common.LobbyState do
   defstruct [
     :id,
     :type,
@@ -12,11 +12,13 @@ defmodule Common.LobbyState do
   ]
 
   def new(lobby_id, type),
-    do: %Common.LobbyState{:id => lobby_id, :type => type} |> Common.LobbyState.new()
+    do:
+      %PlankGames.Common.LobbyState{:id => lobby_id, :type => type}
+      |> PlankGames.Common.LobbyState.new()
 
   def new(state) do
     new_state =
-      %Common.LobbyState{
+      %PlankGames.Common.LobbyState{
         state
         | :winner => nil,
           :has_finished => false
@@ -24,14 +26,14 @@ defmodule Common.LobbyState do
       |> shuffle_players()
 
     case Map.get(state, :type) do
-      :tictactoe -> Map.put(new_state, :game_state, %TicTacToe.State{})
-      :connectfour -> Map.put(new_state, :game_state, %ConnectFour.State{})
-      :yahtzee -> Map.put(new_state, :game_state, %Yahtzee.State{})
+      :tictactoe -> Map.put(new_state, :game_state, %PlankGames.TicTacToe.State{})
+      :connectfour -> Map.put(new_state, :game_state, %PlankGames.ConnectFour.State{})
+      :yahtzee -> Map.put(new_state, :game_state, %PlankGames.Yahtzee.State{})
     end
   end
 
   def start(state) do
-    %Common.LobbyState{
+    %PlankGames.Common.LobbyState{
       state
       | :has_started => true,
         :has_finished => false,
@@ -60,7 +62,7 @@ defmodule Common.LobbyState do
     case Enum.any?(state.players, fn x -> x.id == player_id end) do
       true ->
         {:player_left,
-         %Common.LobbyState{
+         %PlankGames.Common.LobbyState{
            state
            | :players => Enum.filter(state.players, fn x -> x.id != player_id end),
              :has_started => false
@@ -103,7 +105,7 @@ defmodule Common.LobbyState do
   defp shuffle_players(state) do
     shuffled_players = Enum.shuffle(state.players)
 
-    %Common.LobbyState{
+    %PlankGames.Common.LobbyState{
       state
       | :players => shuffled_players,
         :current_player => Enum.at(shuffled_players, 0)

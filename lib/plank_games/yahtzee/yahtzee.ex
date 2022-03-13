@@ -1,4 +1,4 @@
-defmodule Yahtzee do
+defmodule PlankGames.Yahtzee do
   use Supervisor
 
   def child_spec(opts) do
@@ -16,10 +16,10 @@ defmodule Yahtzee do
 
   def init(_args) do
     children = [
-      {DynamicSupervisor, name: Yahtzee.LobbySupervisor, strategy: :one_for_one},
-      {Registry, keys: :unique, name: Yahtzee.LobbyRegistry},
-      {Registry, keys: :unique, name: Yahtzee.ActivityRegistry},
-      {Yahtzee.Activity, name: Yahtzee.Activity, strategy: :one_for_one}
+      {DynamicSupervisor, name: PlankGames.Yahtzee.LobbySupervisor, strategy: :one_for_one},
+      {Registry, keys: :unique, name: PlankGames.Yahtzee.LobbyRegistry},
+      {Registry, keys: :unique, name: PlankGames.Yahtzee.ActivityRegistry},
+      {PlankGames.Yahtzee.Activity, name: PlankGames.Yahtzee.Activity, strategy: :one_for_one}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
@@ -27,8 +27,8 @@ defmodule Yahtzee do
 
   def create(lobby_id) do
     DynamicSupervisor.start_child(
-      Yahtzee.LobbySupervisor,
-      {Yahtzee.Lobby, lobby_id: lobby_id}
+      PlankGames.Yahtzee.LobbySupervisor,
+      {PlankGames.Yahtzee.Lobby, lobby_id: lobby_id}
     )
   end
 end

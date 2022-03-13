@@ -1,4 +1,4 @@
-defmodule ConnectFour do
+defmodule PlankGames.ConnectFour do
   use Supervisor
 
   def child_spec(opts) do
@@ -16,10 +16,11 @@ defmodule ConnectFour do
 
   def init(_args) do
     children = [
-      {DynamicSupervisor, name: ConnectFour.LobbySupervisor, strategy: :one_for_one},
-      {Registry, keys: :unique, name: ConnectFour.LobbyRegistry},
-      {Registry, keys: :unique, name: ConnectFour.ActivityRegistry},
-      {ConnectFour.Activity, name: ConnectFour.Activity, strategy: :one_for_one}
+      {DynamicSupervisor, name: PlankGames.ConnectFour.LobbySupervisor, strategy: :one_for_one},
+      {Registry, keys: :unique, name: PlankGames.ConnectFour.LobbyRegistry},
+      {Registry, keys: :unique, name: PlankGames.ConnectFour.ActivityRegistry},
+      {PlankGames.ConnectFour.Activity,
+       name: PlankGames.ConnectFour.Activity, strategy: :one_for_one}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
@@ -27,8 +28,8 @@ defmodule ConnectFour do
 
   def create(lobby_id) do
     DynamicSupervisor.start_child(
-      ConnectFour.LobbySupervisor,
-      {ConnectFour.Lobby, lobby_id: lobby_id, lobby_type: ConnectFour}
+      PlankGames.ConnectFour.LobbySupervisor,
+      {PlankGames.ConnectFour.Lobby, lobby_id: lobby_id, lobby_type: ConnectFour}
     )
   end
 end

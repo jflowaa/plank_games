@@ -1,4 +1,4 @@
-defmodule TicTacToe do
+defmodule PlankGames.TicTacToe do
   use Supervisor
 
   def child_spec(opts) do
@@ -16,10 +16,10 @@ defmodule TicTacToe do
 
   def init(_args) do
     children = [
-      {DynamicSupervisor, name: TicTacToe.LobbySupervisor, strategy: :one_for_one},
-      {Registry, keys: :unique, name: TicTacToe.LobbyRegistry},
-      {Registry, keys: :unique, name: TicTacToe.ActivityRegistry},
-      {TicTacToe.Activity, name: TicTacToe.Activity}
+      {DynamicSupervisor, name: PlankGames.TicTacToe.LobbySupervisor, strategy: :one_for_one},
+      {Registry, keys: :unique, name: PlankGames.TicTacToe.LobbyRegistry},
+      {Registry, keys: :unique, name: PlankGames.TicTacToe.ActivityRegistry},
+      {PlankGames.TicTacToe.Activity, name: PlankGames.TicTacToe.Activity}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
@@ -27,8 +27,8 @@ defmodule TicTacToe do
 
   def create(lobby_id) do
     DynamicSupervisor.start_child(
-      TicTacToe.LobbySupervisor,
-      {TicTacToe.Lobby, lobby_id: lobby_id}
+      PlankGames.TicTacToe.LobbySupervisor,
+      {PlankGames.TicTacToe.Lobby, lobby_id: lobby_id}
     )
   end
 end

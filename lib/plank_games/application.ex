@@ -14,10 +14,10 @@ defmodule PlankGames.Application do
       PlankGamesWeb.Telemetry,
       {Phoenix.PubSub, name: PlankGames.PubSub},
       PlankGamesWeb.Endpoint,
-      Common.Monitor,
-      TicTacToe,
-      ConnectFour,
-      Yahtzee
+      PlankGames.Common.Monitor,
+      PlankGames.TicTacToe,
+      PlankGames.ConnectFour,
+      PlankGames.Yahtzee
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

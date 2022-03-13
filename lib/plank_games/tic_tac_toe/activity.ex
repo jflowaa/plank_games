@@ -1,4 +1,4 @@
-defmodule TicTacToe.Activity do
+defmodule PlankGames.TicTacToe.Activity do
   use GenServer
   require Logger
 
@@ -23,7 +23,7 @@ defmodule TicTacToe.Activity do
   def handle_call(:refresh, _from, state), do: {:reply, state, get_lobbies()}
 
   defp get_lobbies() do
-    children = Supervisor.which_children(TicTacToe.LobbySupervisor)
+    children = Supervisor.which_children(PlankGames.TicTacToe.LobbySupervisor)
 
     Enum.reduce(children, %{}, fn child, state ->
       lobby_state = :sys.get_state(elem(child, 1))
