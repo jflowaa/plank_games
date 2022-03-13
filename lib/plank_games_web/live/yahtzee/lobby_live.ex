@@ -235,7 +235,10 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
     |> assign(:roll_count, Map.get(game_state, :roll_count))
     |> assign(:has_finished, Map.get(state, :has_finished))
     |> assign(:has_started, Map.get(state, :has_started))
-    |> assign(:scorecards, Map.get(game_state, :scorecards))
+    |> assign(
+      :scorecards,
+      sanitize_scorecards(Map.get(state, :players), Map.get(game_state, :scorecards))
+    )
     |> assign(:dice, Map.get(game_state, :dice))
     |> assign(
       :player_name,
@@ -262,4 +265,7 @@ defmodule PlankGamesWeb.Yahtzee.LobbyLive do
   end
 
   def get_tailing_messages(socket), do: Enum.take(Map.get(socket.assigns, :messages), 5)
+
+  defp sanitize_scorecards(players, scorecards),
+    do: for(x <- players, into: %{}, do: {x.name, Map.get(scorecards, x.id)})
 end

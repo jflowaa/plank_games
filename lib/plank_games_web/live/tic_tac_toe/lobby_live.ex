@@ -160,9 +160,9 @@ defmodule PlankGamesWeb.TicTacToe.LobbyLive do
     |> assign(:board, Map.get(game_state, :board))
     |> assign(:has_finished, Map.get(state, :has_finished))
     |> assign(:has_started, Map.get(state, :has_started))
-    |> assign(:current_token, Map.get(game_state, :current_token))
+    |> assign(:current_player, Map.get(game_state, :current_token))
     |> assign(:winner, Map.get(state, :winner))
-    |> assign(:player_token, determine_player_token(socket, state))
+    |> assign(:player_name, determine_player_token(socket, state))
     |> assign(
       :show_join,
       Common.LobbyState.is_joinable?(state, Map.get(socket.assigns, :player_id))

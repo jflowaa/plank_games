@@ -95,8 +95,7 @@ defmodule Yahtzee.Lobby do
 
     case elem(result, 0) do
       :ok ->
-        {:reply, elem(result, 0),
-         Map.put(state, :game_state, elem(result, 1)) |> Common.LobbyState.switch_player()}
+        {:reply, elem(result, 0), Map.put(state, :game_state, elem(result, 1))}
 
       _ ->
         {:reply, elem(result, 0), state}
@@ -138,7 +137,8 @@ defmodule Yahtzee.Lobby do
     case elem(result, 0) do
       :ok ->
         {:reply, elem(result, 0),
-         Map.put(state, :game_state, Yahtzee.State.compute_player_totals(elem(result, 1)))}
+         Map.put(state, :game_state, Yahtzee.State.compute_player_totals(elem(result, 1)))
+         |> Common.LobbyState.switch_player()}
 
       _ ->
         {:reply, elem(result, 0), Map.put(state, :game_state, elem(result, 1))}

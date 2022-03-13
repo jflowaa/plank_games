@@ -18,11 +18,11 @@ defmodule PlankGamesWeb.Live.Common.LobbyPanelComponent do
           <a href={"/#{@game}"}>
             <button class="btn-primary">Leave Lobby</button>
           </a>
-          <%= if @player_token do %>
-            <h2 class="font-thin text-lg py-5 dark:text-white">Your Token: <%= @player_token %></h2>
+          <%= if @player_name do %>
+            <h2 class="font-thin text-lg py-5 dark:text-white">You: <%= @player_name %></h2>
           <% end %>
           <%= if @has_started do %>
-            <h2 class="font-thin text-xl py-5 dark:text-white">Current Turn: <%= @current_token %></h2>
+            <h2 class="font-thin text-xl py-5 dark:text-white">Current Player: <%= @current_player %></h2>
           <% end %>
         </div>
         <.live_component module={PlankGamesWeb.Live.Common.MessageComponent} id="message" messages={@messages} />

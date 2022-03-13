@@ -4,7 +4,7 @@ defmodule PlankGamesWeb.Yahtzee.ScorecardLiveComponent do
   def render(assigns) do
     ~H"""
     <div class="block p-6 mr-3 mt-3 rounded-lg shadow-lg bg-white dark:bg-gray-800 dark:text-white w-100 shrink-0">
-      <h2 class="text-gray-700 dark:text-white text-base mb-4 text-sm">TODO Player's Name Scorecard</h2>
+      <h2 class="text-gray-700 dark:text-white text-base mb-4 text-sm"><%= elem(@scorecard, 0) %>'s Scorecard</h2>
       <div class="flex flex-col">
         <table class="table-fixed text-sm">
           <thead class="border-b">
