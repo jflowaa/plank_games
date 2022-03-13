@@ -28,7 +28,7 @@ defmodule PlankGamesWeb.PlankGames.Yahtzee.LobbyLive do
 
   @impl true
   def handle_event("join", _, socket) do
-    case PlankGames.Yahtzee.Lobby.join(
+    case PlankGames.Yahtzee.Client.join_game(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :player_id)
          ) do
@@ -37,19 +37,13 @@ defmodule PlankGamesWeb.PlankGames.Yahtzee.LobbyLive do
          assign(socket, :messages, ["You're already joined" | get_tailing_messages(socket)])}
 
       :ok ->
-        Phoenix.PubSub.broadcast(
-          PlankGames.PubSub,
-          "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
-          {:change, "Player joined"}
-        )
-
         {:noreply, fetch(socket)}
     end
   end
 
   @impl true
   def handle_event("new", _, socket) do
-    case PlankGames.Yahtzee.Lobby.new(
+    case PlankGames.Yahtzee.Client.new(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :player_id)
          ) do
@@ -64,58 +58,33 @@ defmodule PlankGamesWeb.PlankGames.Yahtzee.LobbyLive do
          assign(socket, :messages, ["Game is not yet finished" | get_tailing_messages(socket)])}
 
       :ok ->
-        Phoenix.PubSub.broadcast(
-          PlankGames.PubSub,
-          "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
-          {:change, "New game starting"}
-        )
-
         {:noreply, fetch(socket)}
     end
   end
 
   @impl true
   def handle_event("leave", _, socket) do
-    if PlankGames.Yahtzee.Lobby.remove_player(
-         Map.get(socket.assigns, :lobby_id),
-         Map.get(socket.assigns, :player_id)
-       ) ==
-         :player_left do
-      Phoenix.PubSub.broadcast(
-        PlankGames.PubSub,
-        "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
-        {:change, "Player left, starting new game"}
-      )
-    end
+    PlankGames.Yahtzee.Client.leave_game(
+      Map.get(socket.assigns, :lobby_id),
+      Map.get(socket.assigns, :player_id)
+    )
 
     {:noreply, fetch(socket)}
   end
 
   @impl true
   def handle_event("start", _, socket) do
-    PlankGames.Yahtzee.Lobby.start(Map.get(socket.assigns, :lobby_id))
-
-    Phoenix.PubSub.broadcast(
-      PlankGames.PubSub,
-      "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
-      {:change}
-    )
+    PlankGames.Yahtzee.Client.start(Map.get(socket.assigns, :lobby_id))
 
     {:noreply, fetch(socket)}
   end
 
   @impl true
   def handle_event("hold", %{"die" => die}, socket) do
-    PlankGames.Yahtzee.Lobby.hold_die(
+    PlankGames.Yahtzee.Client.hold_die(
       Map.get(socket.assigns, :lobby_id),
       Map.get(socket.assigns, :player_id),
       String.to_integer(die)
-    )
-
-    Phoenix.PubSub.broadcast(
-      PlankGames.PubSub,
-      "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
-      {:change}
     )
 
     {:noreply, fetch(socket)}
@@ -123,16 +92,10 @@ defmodule PlankGamesWeb.PlankGames.Yahtzee.LobbyLive do
 
   @impl true
   def handle_event("release", %{"die" => die}, socket) do
-    PlankGames.Yahtzee.Lobby.release_die(
+    PlankGames.Yahtzee.Client.release_die(
       Map.get(socket.assigns, :lobby_id),
       Map.get(socket.assigns, :player_id),
       String.to_integer(die)
-    )
-
-    Phoenix.PubSub.broadcast(
-      PlankGames.PubSub,
-      "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
-      {:change}
     )
 
     {:noreply, fetch(socket)}
@@ -140,7 +103,7 @@ defmodule PlankGamesWeb.PlankGames.Yahtzee.LobbyLive do
 
   @impl true
   def handle_event("roll", _, socket) do
-    case PlankGames.Yahtzee.Lobby.roll(
+    case PlankGames.Yahtzee.Client.roll(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :player_id)
          ) do
@@ -163,38 +126,13 @@ defmodule PlankGamesWeb.PlankGames.Yahtzee.LobbyLive do
          ])}
 
       :ok ->
-        state = PlankGames.Yahtzee.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
-        game_state = Map.get(state, :game_state)
-
-        if state.has_finished do
-          if state.winner do
-            Phoenix.PubSub.broadcast(
-              PlankGames.PubSub,
-              "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
-              {:change, "#{Map.get(game_state, :current_token)} has won"}
-            )
-          else
-            Phoenix.PubSub.broadcast(
-              PlankGames.PubSub,
-              "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
-              {:change, "Tie game"}
-            )
-          end
-        else
-          Phoenix.PubSub.broadcast(
-            PlankGames.PubSub,
-            "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
-            {:change}
-          )
-        end
-
         {:noreply, fetch(socket)}
     end
   end
 
   @impl true
   def handle_event("end_turn", %{"category" => category}, socket) do
-    case PlankGames.Yahtzee.Lobby.end_turn(
+    case PlankGames.Yahtzee.Client.end_turn(
            Map.get(socket.assigns, :lobby_id),
            Map.get(socket.assigns, :player_id),
            String.to_atom(category)
@@ -224,12 +162,6 @@ defmodule PlankGamesWeb.PlankGames.Yahtzee.LobbyLive do
          ])}
 
       :ok ->
-        Phoenix.PubSub.broadcast(
-          PlankGames.PubSub,
-          "#{@topic}_#{Map.get(socket.assigns, :lobby_id)}",
-          {:change}
-        )
-
         {:noreply, fetch(socket)}
     end
   end
@@ -239,10 +171,10 @@ defmodule PlankGamesWeb.PlankGames.Yahtzee.LobbyLive do
     do: {:noreply, fetch(socket) |> assign(:messages, [message | get_tailing_messages(socket)])}
 
   @impl true
-  def handle_info({:change}, socket), do: {:noreply, fetch(socket)}
+  def handle_info(:change, socket), do: {:noreply, fetch(socket)}
 
   def fetch(socket) do
-    state = PlankGames.Yahtzee.Lobby.lookup(Map.get(socket.assigns, :lobby_id))
+    state = PlankGames.Yahtzee.Client.lookup(Map.get(socket.assigns, :lobby_id))
     game_state = Map.get(state, :game_state)
 
     player =

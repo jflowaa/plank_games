@@ -28,7 +28,7 @@ defmodule PlankGames.Yahtzee do
   def create(lobby_id) do
     DynamicSupervisor.start_child(
       PlankGames.Yahtzee.LobbySupervisor,
-      {PlankGames.Yahtzee.Lobby, lobby_id: lobby_id}
+      {PlankGames.Yahtzee.Server, lobby_id: lobby_id}
     )
   end
 end

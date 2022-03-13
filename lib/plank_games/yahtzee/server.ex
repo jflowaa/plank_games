@@ -1,43 +1,6 @@
-defmodule PlankGames.Yahtzee.Lobby do
+defmodule PlankGames.Yahtzee.Server do
   use GenServer, restart: :transient
   require Logger
-
-  def lookup(lobby_id) do
-    try do
-      GenServer.call(via_tuple(lobby_id), :get)
-    catch
-      :exit, _ ->
-        Logger.info("Lobby not found, going to retry after 1 second")
-        Process.sleep(1000)
-        GenServer.call(via_tuple(lobby_id), :get)
-    end
-  end
-
-  def new(lobby_id, player_id), do: GenServer.call(via_tuple(lobby_id), {:new, player_id})
-
-  def join(lobby_id, player_id), do: GenServer.call(via_tuple(lobby_id), {:join, player_id})
-
-  def start(lobby_id), do: GenServer.call(via_tuple(lobby_id), :start)
-
-  def roll(lobby_id, player_id),
-    do: GenServer.call(via_tuple(lobby_id), {:roll, player_id})
-
-  def hold_die(lobby_id, player_id, die),
-    do: GenServer.call(via_tuple(lobby_id), {:hold_die, player_id, die})
-
-  def release_die(lobby_id, player_id, die),
-    do: GenServer.call(via_tuple(lobby_id), {:release_die, player_id, die})
-
-  def end_turn(lobby_id, player_id, category),
-    do: GenServer.call(via_tuple(lobby_id), {:end_turn, player_id, category})
-
-  def remove_player(lobby_id, player_id),
-    do: GenServer.call(via_tuple(lobby_id), {:remove_player, player_id})
-
-  def remove_player(lobby_id),
-    do: GenServer.call(via_tuple(lobby_id), :remove_player)
-
-  def add_player(lobby_id), do: GenServer.call(via_tuple(lobby_id), :add_player)
 
   def start_link(opts) do
     case GenServer.start_link(__MODULE__, opts, name: via_tuple(Keyword.get(opts, :lobby_id))) do
@@ -69,7 +32,7 @@ defmodule PlankGames.Yahtzee.Lobby do
     end
   end
 
-  def handle_call({:join, player_id}, _from, state) do
+  def handle_call({:join_game, player_id}, _from, state) do
     cond do
       Enum.any?(state.players, fn x -> x.id == player_id end) ->
         {:reply, :already_joined, state}
@@ -83,6 +46,12 @@ defmodule PlankGames.Yahtzee.Lobby do
            PlankGames.Yahtzee.State.add_scorecard(state.game_state, player_id)
          )}
     end
+  end
+
+  def handle_call({:leave_game, player_id}, _from, state) do
+    result = PlankGames.Common.LobbyState.remove_player(state, player_id)
+
+    {:reply, elem(result, 0), elem(result, 1)}
   end
 
   def handle_call(:start, _from, state),
@@ -156,36 +125,19 @@ defmodule PlankGames.Yahtzee.Lobby do
     end
   end
 
-  def handle_call({:remove_player, player_id}, _from, state) do
-    result = PlankGames.Common.LobbyState.remove_player(state, player_id)
+  def handle_call({:leave_lobby, player_id}, _from, state) do
+    result = PlankGames.Common.LobbyState.leave_lobby(state, player_id)
 
-    case elem(result, 0) do
-      :player_left ->
-        {:reply, :player_left,
-         elem(result, 1)
-         |> Map.put(
-           :game_state,
-           PlankGames.Yahtzee.State.remove_scorecard(state.game_state, player_id)
-         )}
-
-      _ ->
-        {:reply, elem(result, 0), elem(result, 1)}
-    end
+    {:reply, elem(result, 0), elem(result, 1)}
   end
 
-  def handle_call(:remove_player, _from, state) do
-    if state.connection_count <= 1, do: Process.send_after(self(), :close, 10000)
-
-    {:reply, :ok, Map.put(state, :connection_count, Map.get(state, :connection_count) - 1)}
-  end
-
-  def handle_call(:add_player, _from, state),
+  def handle_call(:join_lobby, _from, state),
     do: {:reply, :ok, Map.put(state, :connection_count, Map.get(state, :connection_count) + 1)}
 
-  def handle_info(:close, state) do
+  def handle_call(:close, _from, state) do
     case PlankGames.Common.LobbyState.should_close?(state) do
       true ->
-        {:stop, :normal, state}
+        {:stop, :normal, state, state}
 
       false ->
         {:noreply, state}

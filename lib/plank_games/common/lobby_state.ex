@@ -20,8 +20,9 @@ defmodule PlankGames.Common.LobbyState do
     new_state =
       %PlankGames.Common.LobbyState{
         state
-        | :winner => nil,
-          :has_finished => false
+        | :has_started => false,
+          :has_finished => false,
+          :winner => nil
       }
       |> shuffle_players()
 
@@ -45,13 +46,13 @@ defmodule PlankGames.Common.LobbyState do
   def add_player(state, player_id) do
     player_count = Enum.count(Map.get(state, :players))
 
-    Map.put(
-      state,
+    state
+    |> Map.put(
       :players,
       state.players ++
         [
           %{
-            :name => "Player#{player_count + 1}",
+            :name => "Player #{player_count + 1}",
             :id => player_id
           }
         ]
@@ -61,15 +62,41 @@ defmodule PlankGames.Common.LobbyState do
   def remove_player(state, player_id) do
     case Enum.any?(state.players, fn x -> x.id == player_id end) do
       true ->
-        {:player_left,
+        {:ok,
          %PlankGames.Common.LobbyState{
            state
            | :players => Enum.filter(state.players, fn x -> x.id != player_id end),
-             :has_started => false
+             :has_finished => true
          }}
 
       false ->
-        {:ok, state}
+        {:not_found, state}
+    end
+  end
+
+  def leave_lobby(state, player_id) do
+    state = Map.put(state, :connection_count, Map.get(state, :connection_count) - 1)
+
+    if Map.get(state, :connection_count) == 0 do
+      {:empty,
+       %PlankGames.Common.LobbyState{
+         state
+         | :players => Enum.filter(state.players, fn x -> x.id != player_id end),
+           :has_finished => true
+       }}
+    else
+      case Enum.any?(state.players, fn x -> x.id == player_id end) do
+        true ->
+          {:player_left,
+           %PlankGames.Common.LobbyState{
+             state
+             | :players => Enum.filter(state.players, fn x -> x.id != player_id end),
+               :has_finished => true
+           }}
+
+        false ->
+          {:ok, state}
+      end
     end
   end
 
@@ -85,12 +112,15 @@ defmodule PlankGames.Common.LobbyState do
     end
   end
 
-  def should_close?(state), do: state.connection_count <= 0
+  def should_close?(state), do: state.connection_count < 1
 
   def is_joinable?(state, player_id) do
     cond do
       is_player?(state, player_id) ->
         false
+
+      Map.get(state, :has_finished) ->
+        true
 
       Map.get(state, :has_started) ->
         false

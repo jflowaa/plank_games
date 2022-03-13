@@ -29,7 +29,7 @@ defmodule PlankGames.ConnectFour do
   def create(lobby_id) do
     DynamicSupervisor.start_child(
       PlankGames.ConnectFour.LobbySupervisor,
-      {PlankGames.ConnectFour.Lobby, lobby_id: lobby_id, lobby_type: ConnectFour}
+      {PlankGames.ConnectFour.Server, lobby_id: lobby_id, lobby_type: ConnectFour}
     )
   end
 end

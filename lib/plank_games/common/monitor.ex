@@ -31,31 +31,13 @@ defmodule PlankGames.Common.Monitor do
 
     case Map.get(details, :type) do
       :tictactoe ->
-        PlankGames.TicTacToe.Lobby.add_player(Map.get(details, :lobby_id))
-
-        Phoenix.PubSub.broadcast(
-          PlankGames.PubSub,
-          "PlankGames.TicTacToe.Activity",
-          :update
-        )
+        PlankGames.TicTacToe.Client.join_lobby(Map.get(details, :lobby_id))
 
       :connectfour ->
-        PlankGames.ConnectFour.Lobby.add_player(Map.get(details, :lobby_id))
-
-        Phoenix.PubSub.broadcast(
-          PlankGames.PubSub,
-          "PlankGames.ConnectFour.Activity",
-          :update
-        )
+        PlankGames.ConnectFour.Client.join_lobby(Map.get(details, :lobby_id))
 
       :yahtzee ->
-        PlankGames.Yahtzee.Lobby.add_player(Map.get(details, :lobby_id))
-
-        Phoenix.PubSub.broadcast(
-          PlankGames.PubSub,
-          "PlankGames.Yahtzee.Activity",
-          :update
-        )
+        PlankGames.Yahtzee.Client.join_lobby(Map.get(details, :lobby_id))
     end
 
     {:reply, :ok, Map.put(state, Map.get(details, :game_pid), new_details)}
@@ -66,63 +48,21 @@ defmodule PlankGames.Common.Monitor do
 
     case Map.get(details, :type) do
       :tictactoe ->
-        if PlankGames.TicTacToe.Lobby.remove_player(
-             Map.get(details, :lobby_id),
-             Map.get(details, :player_id)
-           ) == :player_left do
-          Phoenix.PubSub.broadcast(
-            PlankGames.PubSub,
-            "PlankGames.TicTacToe.Lobby_#{Map.get(details, :lobby_id)}",
-            {:change, "Player left, starting new game"}
-          )
-        end
-
-        PlankGames.TicTacToe.Lobby.remove_player(Map.get(details, :lobby_id))
-
-        Phoenix.PubSub.broadcast(
-          PlankGames.PubSub,
-          "PlankGames.TicTacToe.Activity",
-          :update
+        PlankGames.TicTacToe.Client.leave_lobby(
+          Map.get(details, :lobby_id),
+          Map.get(details, :player_id)
         )
 
       :connectfour ->
-        if PlankGames.ConnectFour.Lobby.remove_player(
-             Map.get(details, :lobby_id),
-             Map.get(details, :player_id)
-           ) == :player_left do
-          Phoenix.PubSub.broadcast(
-            PlankGames.PubSub,
-            "PlankGames.ConnectFour.Lobby_#{Map.get(details, :lobby_id)}",
-            {:change, "Player left, starting new game"}
-          )
-        end
-
-        PlankGames.ConnectFour.Lobby.remove_player(Map.get(details, :lobby_id))
-
-        Phoenix.PubSub.broadcast(
-          PlankGames.PubSub,
-          "PlankGames.ConnectFour.Activity",
-          :update
+        PlankGames.ConnectFour.Client.leave_lobby(
+          Map.get(details, :lobby_id),
+          Map.get(details, :player_id)
         )
 
       :yahtzee ->
-        if PlankGames.Yahtzee.Lobby.remove_player(
-             Map.get(details, :lobby_id),
-             Map.get(details, :player_id)
-           ) == :player_left do
-          Phoenix.PubSub.broadcast(
-            PlankGames.PubSub,
-            "PlankGames.Yahtzee.Lobby_#{Map.get(details, :lobby_id)}",
-            {:change, "Player left, starting new game"}
-          )
-        end
-
-        PlankGames.Yahtzee.Lobby.remove_player(Map.get(details, :lobby_id))
-
-        Phoenix.PubSub.broadcast(
-          PlankGames.PubSub,
-          "PlankGames.Yahtzee.Activity",
-          :update
+        PlankGames.Yahtzee.Client.leave_lobby(
+          Map.get(details, :lobby_id),
+          Map.get(details, :player_id)
         )
     end
 

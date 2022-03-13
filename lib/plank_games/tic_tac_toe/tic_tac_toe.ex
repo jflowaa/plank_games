@@ -28,7 +28,7 @@ defmodule PlankGames.TicTacToe do
   def create(lobby_id) do
     DynamicSupervisor.start_child(
       PlankGames.TicTacToe.LobbySupervisor,
-      {PlankGames.TicTacToe.Lobby, lobby_id: lobby_id}
+      {PlankGames.TicTacToe.Server, lobby_id: lobby_id}
     )
   end
 end

@@ -1,6 +1,6 @@
 defmodule PlankGamesWeb.ConnectFour.OverviewLive do
   use PlankGamesWeb, :live_view
-  @topic inspect(ConnectorFour.Activity)
+  @topic inspect(PlankGames.ConnectFour.Activity)
 
   @impl true
   def render(assigns) do
