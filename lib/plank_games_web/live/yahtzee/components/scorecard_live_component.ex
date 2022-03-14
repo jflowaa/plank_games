@@ -4,11 +4,11 @@ defmodule PlankGamesWeb.PlankGames.Yahtzee.ScorecardLiveComponent do
   def render(assigns) do
     ~H"""
     <div class="block p-6 mr-3 mt-3 rounded-lg shadow-lg bg-white dark:bg-gray-800 dark:text-white w-100 shrink-0">
-      <h2 class="text-gray-700 dark:text-white text-base mb-4 text-sm"><%= elem(@scorecard, 0) %>'s Scorecard</h2>
+      <h2 class="text-gray-700 dark:text-white text-base mb-4 text-md"><%= elem(@scorecard, 0) %>'s Scorecard</h2>
       <div class="flex flex-col">
-        <table class="table-fixed text-sm">
+        <table class="table-fixed text-xl">
           <thead class="border-b">
-            <th scope="col" class="px-4 py-4 text-left">Category</th>
+            <th scope="col" class="px-4 text-left">Category</th>
             <th scope="col" class="text-left">Score</th>
           </thead>
           <tbody>
@@ -34,7 +34,11 @@ defmodule PlankGamesWeb.PlankGames.Yahtzee.ScorecardLiveComponent do
             <% end %>
             <tr>
               <td class="text-md">Yahtzee bonus</td>
-              <td class="text-center" ><%= Map.get(elem(@scorecard, 1), :yahtzee_bonus) %></td>
+              <%= if Map.get(elem(@scorecard, 1), :yahtzee) == 50 do %>
+                <td class="text-center cursor-pointer border-b" phx-click="end_turn" phx-value-category={"yahtzee"}><%= Map.get(elem(@scorecard, 1), :yahtzee_bonus) %></td>
+              <% else %>
+                <td class="text-center" ><%= Map.get(elem(@scorecard, 1), :yahtzee_bonus) %></td>
+              <% end %>
             </tr>
             <tr>
               <td class="text-md">Lower section</td>

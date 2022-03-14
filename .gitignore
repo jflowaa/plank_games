@@ -35,3 +35,4 @@ npm-debug.log
 deployment/infrastructure/*
 deployment/overlays/prod/secret.yaml
 *.tar.gz
+*.elixir_ls

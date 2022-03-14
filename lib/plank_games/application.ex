@@ -15,6 +15,7 @@ defmodule PlankGames.Application do
       {Phoenix.PubSub, name: PlankGames.PubSub},
       PlankGamesWeb.Endpoint,
       PlankGames.Common.Monitor,
+      PlankGames.Stats.Registry,
       PlankGames.TicTacToe,
       PlankGames.ConnectFour,
       PlankGames.Yahtzee

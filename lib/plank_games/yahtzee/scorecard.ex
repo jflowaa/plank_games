@@ -81,7 +81,7 @@ defmodule PlankGames.Yahtzee.Scorecard do
             end
 
           :yahtzee ->
-            if is_x_of_kind?(dice, 4) do
+            if is_x_of_kind?(dice, 5) do
               Map.put(scorecard, category, 50)
             else
               Map.put(scorecard, category, 0)
@@ -105,6 +105,9 @@ defmodule PlankGames.Yahtzee.Scorecard do
             scorecard
         end
 
+      :yahtzee_bonus ->
+        Map.put(scorecard, category, Map.get(scorecard, category) + @yahtzee_bonus)
+
       true ->
         Map.put(scorecard, category, 0)
     end
@@ -116,6 +119,14 @@ defmodule PlankGames.Yahtzee.Scorecard do
   def get_upper_section(), do: @upper_section
 
   def get_lower_section(), do: @lower_section
+
+  def eligible_for_yahtzee_bonus?(scorecard, dice) do
+    if Map.get(scorecard, :yahtzee) == 50 and is_x_of_kind?(dice, 5) do
+      true
+    else
+      false
+    end
+  end
 
   defp compute_upper_section_category(scorecard, category, dice, target) do
     Map.put(
@@ -152,7 +163,7 @@ defmodule PlankGames.Yahtzee.Scorecard do
     Map.put(
       scorecard,
       :lower_section,
-      @yahtzee_bonus * Map.get(scorecard, :yahtzee_bonus) +
+      Map.get(scorecard, :yahtzee_bonus) +
         Enum.reduce(
           Map.values(Map.take(scorecard, @lower_section)),
           0,
@@ -171,15 +182,16 @@ defmodule PlankGames.Yahtzee.Scorecard do
 
   defp is_x_of_kind?(dice, count),
     do:
-      Enum.any?(Enum.frequencies_by(Map.values(dice), fn x -> Map.get(x, :value) end), fn x ->
-        elem(x, 1) > count
-      end)
+      dice
+      |> Map.values()
+      |> Enum.frequencies_by(fn x -> Map.get(x, :value) end)
+      |> Enum.any?(fn x -> elem(x, 1) >= count end)
 
   defp is_straight?(dice, count) do
-    (Map.values(dice) ++ [%{value: 0}])
+    Map.values(dice)
     |> Enum.map(fn x -> Map.get(x, :value) end)
     |> Enum.sort_by(fn x -> x end)
-    |> Enum.chunk_every(2)
+    |> Enum.chunk_every(2, 1)
     |> Enum.take_while(fn x ->
       Enum.at(x, 0) == Enum.at(x, 1) - 1
     end)

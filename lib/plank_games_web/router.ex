@@ -19,6 +19,7 @@ defmodule PlankGamesWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+    live "/dashboard", Stats.DashboardLive, :index
     live "/tictactoe", TicTacToe.OverviewLive, :index
     live "/tictactoe/:lobby_id", PlankGames.TicTacToe.LobbyLive, :index
     live "/connectfour", ConnectFour.OverviewLive, :index

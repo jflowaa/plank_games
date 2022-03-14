@@ -36,32 +36,21 @@ defmodule PlankGames.Yahtzee.State do
       is_nil(Map.get(state.scorecards, player_id)) ->
         {:invalid_player, state}
 
-      not is_nil(Map.get(Map.get(state.scorecards, player_id), category)) ->
-        {:category_set, state}
-
       Map.get(state, :roll_count) == 0 ->
         {:not_rolled, state}
 
+      category == :yahtzee and
+          PlankGames.Yahtzee.Scorecard.eligible_for_yahtzee_bonus?(
+            Map.get(state.scorecards, player_id),
+            state.dice
+          ) ->
+        {:ok, score_category(state, player_id, :yahtzee_bonus)}
+
+      not is_nil(Map.get(Map.get(state.scorecards, player_id), category)) ->
+        {:category_set, state}
+
       true ->
-        {:ok,
-         Map.put(
-           state,
-           :scorecards,
-           Map.put(
-             state.scorecards,
-             player_id,
-             PlankGames.Yahtzee.Scorecard.score_category(
-               Map.get(state.scorecards, player_id),
-               category,
-               state.dice
-             )
-           )
-         )
-         |> Map.put(:roll_count, 0)
-         |> Map.put(
-           :dice,
-           for({k, v} <- Map.get(state, :dice), into: %{}, do: {k, Map.put(v, :hold, false)})
-         )}
+        {:ok, score_category(state, player_id, category)}
     end
   end
 
@@ -104,4 +93,25 @@ defmodule PlankGames.Yahtzee.State do
         :dice,
         Map.put(state.dice, die, Map.put(Map.get(state.dice, die), :hold, false))
       )
+
+  defp score_category(state, player_id, category) do
+    Map.put(
+      state,
+      :scorecards,
+      Map.put(
+        state.scorecards,
+        player_id,
+        PlankGames.Yahtzee.Scorecard.score_category(
+          Map.get(state.scorecards, player_id),
+          category,
+          state.dice
+        )
+      )
+    )
+    |> Map.put(:roll_count, 0)
+    |> Map.put(
+      :dice,
+      for({k, v} <- Map.get(state, :dice), into: %{}, do: {k, Map.put(v, :hold, false)})
+    )
+  end
 end
