@@ -80,6 +80,13 @@ defmodule PlankGames.Yahtzee.Scorecard do
               Map.put(scorecard, category, 0)
             end
 
+          :full_house ->
+            if is_full_house?(dice) do
+              Map.put(scorecard, category, 25)
+            else
+              Map.put(scorecard, category, 0)
+            end
+
           :yahtzee ->
             if is_x_of_kind?(dice, 5) do
               Map.put(scorecard, category, 50)
@@ -187,15 +194,37 @@ defmodule PlankGames.Yahtzee.Scorecard do
       |> Enum.frequencies_by(fn x -> Map.get(x, :value) end)
       |> Enum.any?(fn x -> elem(x, 1) >= count end)
 
+  # todo: pea brain can't figure out how to do this right now
   defp is_straight?(dice, count) do
     Map.values(dice)
     |> Enum.map(fn x -> Map.get(x, :value) end)
-    |> Enum.sort_by(fn x -> x end)
-    |> Enum.chunk_every(2, 1)
-    |> Enum.take_while(fn x ->
-      Enum.at(x, 0) == Enum.at(x, 1) - 1
+    |> Enum.uniq()
+    |> Enum.sort()
+    |> Enum.reduce(%{freq: 0, target: 0}, fn x, acc ->
+      cond do
+        acc.freq == count -> acc
+        acc.target == 0 -> %{freq: 1, target: x}
+        acc.target + 1 == x -> %{freq: acc.freq + 1, target: acc.target + 1}
+        true -> acc
+      end
     end)
-    |> List.flatten()
-    |> Enum.count(fn x -> x != 0 end) > count - 1
+    |> Map.get(:freq) == count
+  end
+
+  defp is_full_house?(dice) do
+    grouped =
+      Map.values(dice)
+      |> Enum.map(fn x -> Map.get(x, :value) end)
+      |> Enum.reduce(%{}, fn x, acc ->
+        if Map.has_key?(acc, x),
+          do: Map.put(acc, x, Map.get(acc, x, 1) + 1),
+          else: Map.put(acc, x, 1)
+      end)
+
+    cond do
+      map_size(grouped) != 2 -> false
+      Enum.reduce(grouped, 0, fn x, acc -> acc + elem(x, 1) end) != 5 -> false
+      true -> true
+    end
   end
 end

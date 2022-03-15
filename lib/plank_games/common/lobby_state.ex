@@ -77,7 +77,7 @@ defmodule PlankGames.Common.LobbyState do
   def leave_lobby(state, player_id) do
     state = Map.put(state, :connection_count, Map.get(state, :connection_count) - 1)
 
-    if Map.get(state, :connection_count) == 0 do
+    if Map.get(state, :connection_count) < 1 do
       {:empty,
        %PlankGames.Common.LobbyState{
          state

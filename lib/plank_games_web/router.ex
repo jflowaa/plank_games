@@ -45,7 +45,7 @@ defmodule PlankGamesWeb.Router do
 
     scope "/" do
       pipe_through :browser
-      live_dashboard "/dashboard", metrics: PlankGamesWeb.Telemetry
+      live_dashboard "/metrics", metrics: PlankGamesWeb.Telemetry
     end
   end
 

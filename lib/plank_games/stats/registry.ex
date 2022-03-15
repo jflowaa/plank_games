@@ -17,16 +17,24 @@ defmodule PlankGames.Stats.Registry do
   end
 
   def init(_) do
+    # todo: store this pid?
+    :cpu_sup.start()
     Process.send_after(self(), :update, 1000)
-    {:ok, %{}}
+
+    {:ok,
+     %{
+       PlankGames.TicTacToe.LobbySupervisor => %{},
+       PlankGames.ConnectFour.LobbySupervisor => %{},
+       PlankGames.Yahtzee.LobbySupervisor => %{},
+       :memory_usage => Float.round(:erlang.memory(:total) / 1024 / 1024, 2),
+       :cpu_usage => Float.round(:cpu_sup.util(), 2)
+     }}
   end
 
   def handle_call(:get, _from, state), do: {:reply, state, state}
   def handle_info(:update, _), do: {:noreply, get_stats()}
 
   defp get_stats() do
-    Logger.info("Getting stats")
-
     stats =
       Enum.reduce(
         [
@@ -40,6 +48,8 @@ defmodule PlankGames.Stats.Registry do
           Map.put(state, x, stats)
         end
       )
+      |> Map.put(:memory_usage, Float.round(:erlang.memory(:total) / 1024 / 1024, 2))
+      |> Map.put(:cpu_usage, Float.round(:cpu_sup.util(), 2))
 
     Phoenix.PubSub.broadcast(
       PlankGames.PubSub,

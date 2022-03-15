@@ -1,4 +1,4 @@
-defmodule PlankGamesWeb.PlankGames.Yahtzee.ScorecardLiveComponent do
+defmodule PlankGamesWeb.Yahtzee.ScorecardLiveComponent do
   use Phoenix.LiveComponent
 
   def render(assigns) do
