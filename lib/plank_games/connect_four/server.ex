@@ -14,6 +14,7 @@ defmodule PlankGames.ConnectFour.Server do
 
   def init(args) do
     Process.flag(:trap_exit, true)
+    Process.send_after(self(), :close, 10000)
     {:ok, PlankGames.Common.LobbyState.new(Keyword.get(args, :lobby_id), :connectfour)}
   end
 
@@ -117,6 +118,8 @@ defmodule PlankGames.ConnectFour.Server do
         {:noreply, state}
     end
   end
+
+  def handle_info(:close, state), do: handle_call(:close, nil, state)
 
   defp via_tuple(lobby_id),
     do: {:via, Registry, {PlankGames.ConnectFour.LobbyRegistry, "lobby_#{lobby_id}"}}
