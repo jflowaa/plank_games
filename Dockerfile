@@ -1,6 +1,28 @@
-ARG MIX_ENV="prod"
+# Find eligible builder and runner images on Docker Hub. We use Ubuntu/Debian
+# instead of Alpine to avoid DNS resolution issues in production.
+#
+# https://hub.docker.com/r/hexpm/elixir/tags?page=1&name=ubuntu
+# https://hub.docker.com/_/ubuntu?tab=tags
+#
+# This file is based on these images:
+#
+#   - https://hub.docker.com/r/hexpm/elixir/tags - for the build image
+#   - https://hub.docker.com/_/debian?tab=tags&page=1&name=bullseye-20230227-slim - for the release image
+#   - https://pkgs.org/ - resource for finding needed packages
+#   - Ex: hexpm/elixir:1.14.4-erlang-25.3.2-debian-bullseye-20230227-slim
+#
+ARG ELIXIR_VERSION=1.14.4
+ARG OTP_VERSION=25.3.2
+ARG DEBIAN_VERSION=bullseye-20230227-slim
 
-FROM elixir:alpine as build
+ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
+ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
+
+FROM ${BUILDER_IMAGE} as builder
+
+# install build dependencies
+RUN apt-get update -y && apt-get install -y build-essential git \
+    && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 # prepare build dir
 WORKDIR /app
@@ -10,8 +32,7 @@ RUN mix local.hex --force && \
     mix local.rebar --force
 
 # set build ENV
-ARG MIX_ENV
-ENV MIX_ENV="${MIX_ENV}"
+ENV MIX_ENV="prod"
 
 # install mix dependencies
 COPY mix.exs mix.lock ./
@@ -21,60 +42,50 @@ RUN mkdir config
 # copy compile-time config files before we compile dependencies
 # to ensure any relevant config change will trigger the dependencies
 # to be re-compiled.
-COPY config/config.exs config/$MIX_ENV.exs config/
+COPY config/config.exs config/${MIX_ENV}.exs config/
 RUN mix deps.compile
 
 COPY priv priv
 
-# note: if your project uses a tool like https://purgecss.com/,
-# which customizes asset compilation based on what it finds in
-# your Elixir templates, you will need to move the asset compilation
-# step down so that `lib` is available.
+COPY lib lib
+
 COPY assets assets
+
+# compile assets
 RUN mix assets.deploy
 
-# compile and build the release
-COPY lib lib
+# Compile the release
 RUN mix compile
-# changes to config/runtime.exs don't require recompiling the code
+
+# Changes to config/runtime.exs don't require recompiling the code
 COPY config/runtime.exs config/
-# uncomment COPY if rel/ exists
+
 COPY rel rel
 RUN mix release
 
 # start a new build stage so that the final image will only contain
 # the compiled release and other runtime necessities
-FROM alpine:latest AS app
+FROM ${RUNNER_IMAGE}
 
-RUN apk add --no-cache libstdc++ openssl ncurses-libs
-ARG MIX_ENV
-ENV USER="elixir"
+RUN apt-get update -y && apt-get install -y libstdc++6 openssl libncurses5 locales \
+  && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
-WORKDIR "/home/${USER}/app"
-# Creates an unprivileged user to be used exclusively to run the Phoenix app
-RUN \
-  addgroup \
-   -g 1000 \
-   -S "${USER}" \
-  && adduser \
-   -s /bin/sh \
-   -u 1000 \
-   -G "${USER}" \
-   -h "/home/${USER}" \
-   -D "${USER}" \
-  && su "${USER}"
+# Set the locale
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
 
-# Everything from this line onwards will run in the context of the unprivileged user.
-USER "${USER}"
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
-COPY --from=build --chown="${USER}":"${USER}" /app/_build/"${MIX_ENV}"/rel/plank_games ./
+WORKDIR "/app"
+RUN chown nobody /app
 
-ENTRYPOINT ["bin/plank_games"]
+# set runner ENV
+ENV MIX_ENV="prod"
 
-# Usage:
-#  * build: sudo docker image build -t elixir/plank_games .
-#  * shell: sudo docker container run --rm -it --entrypoint "" -p 127.0.0.1:4000:4000 elixir/plank_games sh
-#  * run:   sudo docker container run --rm -it -p 127.0.0.1:4000:4000 --name plank_games elixir/plank_games
-#  * exec:  sudo docker container exec -it plank_games sh
-#  * logs:  sudo docker container logs --follow --tail 100 plank_games
-CMD ["start"]
+# Only copy the final release from the build stage
+COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/plank_games ./
+
+USER nobody
+
+CMD ["/app/bin/server"]

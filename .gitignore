@@ -19,6 +19,9 @@ erl_crash.dump
 # Also ignore archive artifacts (built via "mix archive.build").
 *.ez
 
+# Temporary files, for example, from tests.
+/tmp/
+
 # Ignore package tarball (built via "mix hex.build").
 plank_games-*.tar
 
@@ -36,3 +39,4 @@ deployment/infrastructure/*
 deployment/overlays/prod/secret.yaml
 *.tar.gz
 *.elixir_ls
+**/.DS_Store

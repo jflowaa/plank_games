@@ -7,13 +7,17 @@ defmodule PlankGames.Application do
 
   @impl true
   def start(_type, _args) do
-    # topologies = Application.get_env(:libcluster, :topologies) || []
-
     children = [
-      # {Cluster.Supervisor, [topologies, [name: PlankGames.ClusterSupervisor]]},
+      # Start the Telemetry supervisor
       PlankGamesWeb.Telemetry,
+      # Start the PubSub system
       {Phoenix.PubSub, name: PlankGames.PubSub},
+      # Start Finch
+      {Finch, name: PlankGames.Finch},
+      # Start the Endpoint (http/https)
       PlankGamesWeb.Endpoint,
+      # Start a worker by calling: PlankGames.Worker.start_link(arg)
+      # {PlankGames.Worker, arg}
       PlankGames.Common.Monitor,
       PlankGames.Stats.Registry,
       PlankGames.TicTacToe,

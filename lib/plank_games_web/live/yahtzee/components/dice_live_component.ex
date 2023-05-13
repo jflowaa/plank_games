@@ -7,7 +7,7 @@ defmodule PlankGamesWeb.Yahtzee.DiceLiveComponent do
       <%= if @is_player do %>
         <button phx-click="roll" class="btn-primary">Roll</button>
       <% end %>
-      <p class="text-gray-700 text-base mb-4 dark:text-white text-sm"> Roll Count <%= @roll_count %></p>
+      <p class="text-gray-700 mb-4 dark:text-white text-sm"> Roll Count <%= @roll_count %></p>
       <%= render_dice_column(@dice, assigns) %>
     </div>
     """

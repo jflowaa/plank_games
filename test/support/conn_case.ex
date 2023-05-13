@@ -19,15 +19,15 @@ defmodule PlankGamesWeb.ConnCase do
 
   using do
     quote do
+      # The default endpoint for testing
+      @endpoint PlankGamesWeb.Endpoint
+
+      use PlankGamesWeb, :verified_routes
+
       # Import conveniences for testing with connections
       import Plug.Conn
       import Phoenix.ConnTest
       import PlankGamesWeb.ConnCase
-
-      alias PlankGamesWeb.Router.Helpers, as: Routes
-
-      # The default endpoint for testing
-      @endpoint PlankGamesWeb.Endpoint
     end
   end
 

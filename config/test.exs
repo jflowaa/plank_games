@@ -4,15 +4,18 @@ import Config
 # you can enable the server option below.
 config :plank_games, PlankGamesWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "ewmFmvDJgV/R8hTP82wmzBHcUui0Pp/SiEvQnORbSGbUl4o2E/+feoB+Cry05RMU",
+  secret_key_base: "iJlomqg3IeINRceZ79gxhWJf3x8lJEPYSJ2c4vWC4/AFV6o/y3qYgmWm3Xyli1hy",
   server: false
 
 # In test we don't send emails.
 config :plank_games, PlankGames.Mailer,
   adapter: Swoosh.Adapters.Test
 
+# Disable swoosh api client as it is only required for production adapters.
+config :swoosh, :api_client, false
+
 # Print only warnings and errors during test
-config :logger, level: :warn
+config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime

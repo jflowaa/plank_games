@@ -1,9 +1,14 @@
 #!/bin/bash
 
+echo yes | mix phx.gen.release --docker
 cd ..
 tar -cvzf plank_games.tar.gz -X plank_games/deployment/exclude.txt plank_games
-scp plank_games.tar.gz root@plank-games:/var/www/html
-ssh plank-games "cd /var/www/html && tar -xvf plank_games.tar.gz"
-ssh plank-games "cd /var/www/html/plank_games && ./deployment/build.sh"
-ssh plank-games "cd /var/www/html/plank_games && _build/prod/rel/plank_games/bin/plank_games stop"
-ssh plank-games "cd /var/www/html/plank_games && _build/prod/rel/plank_games/bin/plank_games daemon"
+scp plank_games.tar.gz root@digital-ocean:/root
+ssh digital-ocean << EOF
+tar -xvf plank_games.tar.gz
+cd plank_games
+docker build . -t plank_games --build-arg MIX_ENV="prod" && \
+  docker stop plank_games && \
+  docker rm plank_games && \
+  docker run -d --name plank_games -e RELEASE_COOKIE=$RELEASE_COOKIE -e SECRET_KEY_BASE=$SECRET_KEY_BASE -p 4000:4000 -it plank_games
+EOF

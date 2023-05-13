@@ -10,9 +10,12 @@ import Config
 # Configures the endpoint
 config :plank_games, PlankGamesWeb.Endpoint,
   url: [host: "localhost"],
-  render_errors: [view: PlankGamesWeb.ErrorView, accepts: ~w(html json), layout: false],
+  render_errors: [
+    formats: [html: PlankGamesWeb.ErrorHTML, json: PlankGamesWeb.ErrorJSON],
+    layout: false
+  ],
   pubsub_server: PlankGames.PubSub,
-  live_view: [signing_salt: "VYngoNig"]
+  live_view: [signing_salt: "+lLRIsNx"]
 
 # Configures the mailer
 #
@@ -23,20 +26,19 @@ config :plank_games, PlankGamesWeb.Endpoint,
 # at the `config/runtime.exs`.
 config :plank_games, PlankGames.Mailer, adapter: Swoosh.Adapters.Local
 
-# Swoosh API client is needed for adapters other than SMTP.
-config :swoosh, :api_client, false
-
 # Configure esbuild (the version is required)
 config :esbuild,
-  version: "0.12.18",
+  version: "0.14.41",
   default: [
-    args: ~w(js/app.js --bundle --target=es2016 --outdir=../priv/static/assets),
+    args:
+      ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
 
+# Configure tailwind (the version is required)
 config :tailwind,
-  version: "3.0.23",
+  version: "3.2.4",
   default: [
     args: ~w(
       --config=tailwind.config.js
