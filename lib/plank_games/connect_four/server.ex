@@ -26,7 +26,14 @@ defmodule PlankGames.ConnectFour.Server do
         {:reply, :not_player, state}
 
       state.has_finished ->
-        {:reply, :ok, PlankGames.Common.LobbyState.new(state)}
+        case Enum.count(state.players) do
+          2 ->
+            {:reply, :ok,
+             state |> PlankGames.Common.LobbyState.new() |> PlankGames.Common.LobbyState.start()}
+
+          _ ->
+            {:reply, :ok, PlankGames.Common.LobbyState.new(state)}
+        end
 
       true ->
         {:reply, :not_finished, state}

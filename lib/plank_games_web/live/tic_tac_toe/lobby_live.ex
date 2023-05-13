@@ -131,15 +131,27 @@ defmodule PlankGamesWeb.PlankGames.TicTacToe.LobbyLive do
 
   def render_square(%{position: position, board: board}, assigns \\ %{}) do
     ~H"""
-    <td class={"border border-gray-500 #{if Enum.at(board, position) == "", do: "cursor-pointer"}"} phx-click="move" phx-value-position={"#{position}"}>
+    <td
+      class={"border border-gray-500 #{if Enum.at(board, position) == "", do: "cursor-pointer"}"}
+      phx-click="move"
+      phx-value-position={"#{position}"}
+    >
       <svg width="100%" height="100%" preserveAspectRatio="none">
-          <%= case Enum.at(board, position) do %>
-            <% "x" -> %>
-              <%= draw_svg_cross() %>
-            <% "o" -> %>
-              <circle cx="50%" cy="50%" r="25%" stroke="black" stroke-width="8" fill="white" fill-opacity="0.0"/>
-            <% _ -> %>
-          <% end %>
+        <%= case Enum.at(board, position) do %>
+          <% "x" -> %>
+            <%= draw_svg_cross() %>
+          <% "o" -> %>
+            <circle
+              cx="50%"
+              cy="50%"
+              r="25%"
+              stroke="black"
+              stroke-width="8"
+              fill="white"
+              fill-opacity="0.0"
+            />
+          <% _ -> %>
+        <% end %>
       </svg>
     </td>
     """
@@ -147,8 +159,8 @@ defmodule PlankGamesWeb.PlankGames.TicTacToe.LobbyLive do
 
   def draw_svg_cross(assigns \\ %{}) do
     ~H"""
-      <line x1="25%" y1="25%" x2="75%", y2="75%" stroke="black" stroke-width="8"/>
-      <line x1="75%" y1="25%" x2="25%", y2="75%" stroke="black" stroke-width="8"/>
+    <line x1="25%" y1="25%" x2="75%" y2="75%" stroke="black" stroke-width="8" />
+    <line x1="75%" y1="25%" x2="25%" y2="75%" stroke="black" stroke-width="8" />
     """
   end
 
