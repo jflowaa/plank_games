@@ -1,0 +1,9 @@
+version: '2'
+services:
+  plank-games:
+    image: plank-games:latest
+    ports:
+      - 4000:4000
+    environment:
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      RELEASE_COOKIE: ${RELEASE_COOKIE}

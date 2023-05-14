@@ -1,9 +1,0 @@
-version: '2'
-services:
-  plank-games:
-    image: plank-games:v2
-    ports:
-      - 4000:4000
-    environment:
-      SECRET_KEY_BASE: LUL8ZXd/HWIIga3WpbAtqiPc7Q0dIIPTsdggYyaUrEaTnrvxKZHlQo340IDHIn4i
-      POD_IP: 127.0.0.1
