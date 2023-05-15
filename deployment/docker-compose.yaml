@@ -5,5 +5,5 @@ services:
     ports:
       - 4000:4000
     environment:
-      SECRET_KEY_BASE: ${PLANK_GAMES_SECRET_KEY_BASE}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       RELEASE_COOKIE: ${RELEASE_COOKIE}
