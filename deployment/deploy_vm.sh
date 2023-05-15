@@ -10,5 +10,5 @@ tar -xvf plank_games.tar.gz
 cd plank_games/
 docker build . -t plank-games --build-arg MIX_ENV="prod"
 docker-compose -f deployment/docker-compose.yaml down
-docker-compose -f deployment/docker-compose.yaml up -d
+docker-compose -f deployment/docker-compose.yaml -p plank_games up -d
 EOF

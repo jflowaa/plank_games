@@ -2,7 +2,6 @@
 */.elixir_ls
 */.dockerignore
 */.gitignore
-*/.Dockerfile
 */_build
 */deps
 */plank_games.tar.gz
