@@ -2,6 +2,7 @@ version: '2'
 services:
   webhost:
     image: plank-games:latest
+    restart: always
     ports:
       - 4000:4000
     environment:
