@@ -1,0 +1,34 @@
+name: Build Plank Games Image
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Docker Login
+      uses: docker/login-action@v2.2.0
+      with:
+        registry: registry.devtoolbelt.xyz
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+    - name: Build Image
+      run: docker build . -t registry.devtoolbelt.xyz/plank-games:latest --build-arg MIX_ENV="prod"
+    - name: Push Image
+      run: docker push registry.devtoolbelt.xyz/plank-games:latest
+    - name: Copy Docker Compose and Start
+      uses: cross-the-world/ssh-scp-ssh-pipelines@v1.1.4
+      with:
+        host: ${{ secrets.VM_IP }}
+        user: ${{ secrets.VM_USERNAME }}
+        key: ${{ secrets.VM_KEY }}
+        scp: |
+          deployment/docker-compose.yaml => plank_games/
+        last_ssh: |
+          docker-compose -f plank_games/docker-compose.yaml -p plank_games down
+          docker-compose -f plank_games/docker-compose.yaml -p plank_games up -d
