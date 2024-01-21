@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" class="[scrollbar-gutter:stable]">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="A place to play board games online" />
+    <meta
+      name="og:title"
+      property="og:title"
+      content="Plank Games - A place to play board games online"
+    />
+    <meta name="csrf-token" content={get_csrf_token()} />
+    <.live_title>
+      <%= assigns[:page_title] || "Plank Games" %>
+    </.live_title>
+    <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
+    </script>
+  </head>
+  <body class="bg-white dark:bg-slate-900">
+    <main>
+      <nav class="relative flex flex-wrap items-center justify-between w-full p-4 text-gray-500 shadow-2xl navbar navbar-light">
+        <a href="/">
+          <h1 class="text-xl hover:text-gray-700 focus:text-gray-700">Plank Games</h1>
+        </a>
+        <a href="/dashboard">
+          <h1 class="text-sm hover:text-gray-700 focus:text-gray-700">Dashboard</h1>
+        </a>
+      </nav>
+      <%= @inner_content %>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+<%= if @failed_lobby do %>
+  <PlankGamesWeb.Components.Lobby.failed_to_start id="failed-lobby" />
+<% else %>
+  <div class="container mx-auto">
+    <div class="grid gap-4 md:grid-cols-12">
+      <div class="md:col-span-8">
+        <table class="table-fixed max-w-3xl">
+          <tbody>
+            <tr>
+              <%= for index <- 0..2 do %>
+                <%= render_square(index, assigns) %>
+              <% end %>
+            </tr>
+            <tr>
+              <%= for index <- 0..2 do %>
+                <%= render_square(index + 3, assigns) %>
+              <% end %>
+            </tr>
+            <tr>
+              <%= for index <- 0..2 do %>
+                <%= render_square(index + 6, assigns) %>
+              <% end %>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="md:col-span-4">
+        <PlankGamesWeb.Components.Lobby.control_panel
+          id="lobby-control-panel"
+          game="tic_tac_toe"
+          total_connections={@connections.total}
+          total_players={@connections.players}
+          show_join={@show_join}
+          is_player={@is_player}
+          has_started={@has_started}
+          has_finished={@has_finished}
+          player_name={@player_name}
+          current_player={@current_player}
+        />
+        <PlankGamesWeb.Components.Lobby.lobby_chat id="lobby-chat" messages={@streams.messages} />
+      </div>
+    </div>
+  </div>
+<% end %>

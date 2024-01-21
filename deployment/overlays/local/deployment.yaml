@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plank-games-deployment
+  labels:
+    selector: server-selector
+spec:
+  replicas: 2
+  template:
+    spec:
+      volumes:
+        - name: host-mount
+          hostPath:
+            path: /host
+      containers:
+        - name: plank-games
+          image: elixir:latest
+          command: ["sh"]
+          args: ["deployment/overlays/local/run.sh"]
+          workingDir: /host
+          volumeMounts:
+            - mountPath: /host
+              name: host-mount
